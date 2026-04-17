@@ -141,15 +141,31 @@
   .search input::placeholder { color: var(--muted); }
 
   .pill {
+    position: relative;
     padding: 12px 20px;
     border: 1px solid var(--fg);
     border-radius: var(--radius);
     font-weight: 600;
     font-size: 14px;
     cursor: pointer;
-    transition: background var(--dur) var(--ease), color var(--dur) var(--ease), transform var(--dur) var(--ease);
+    overflow: hidden;
+    isolation: isolate;
+    background: var(--bg);
+    transition: color var(--dur) var(--ease), transform var(--dur) var(--ease);
   }
-  .pill:hover { background: var(--fg); color: var(--bg); transform: translateY(-2px); }
+  .pill::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background:
+      radial-gradient(var(--bg) 1.2px, transparent 1.4px) 0 0 / 7px 7px,
+      var(--fg);
+    transform: translateY(101%);
+    transition: transform var(--dur) var(--ease-in-out);
+  }
+  .pill:hover { color: var(--bg); transform: translateY(-2px); }
+  .pill:hover::before { transform: translateY(0); }
 
   .page {
     display: none;
