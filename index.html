@@ -480,26 +480,23 @@
     transition: background var(--dur) var(--ease), color var(--dur) var(--ease), transform var(--dur) var(--ease);
   }
   .lang-choice:hover { background: var(--fg); color: var(--bg); transform: translateY(-2px); }
-  .lang-flag-wrap {
-    position: relative;
-    flex-shrink: 0;
-    display: block;
-    width: 34px;
-    line-height: 0;
-  }
   .lang-flag {
     width: 34px;
-    height: auto;
+    height: 22px;
+    object-fit: cover;
     display: block;
+    flex-shrink: 0;
   }
+  .lang-choice { position: relative; }
   .lang-flag-badge {
     position: absolute;
     top: -10px;
     right: -10px;
-    font-size: 18px;
+    font-size: 20px;
     line-height: 1;
     pointer-events: none;
     filter: drop-shadow(0 1px 2px rgba(0,0,0,0.25));
+    z-index: 2;
   }
   .lang-names { display: flex; flex-direction: column; min-width: 0; }
   .lang-native { font-weight: 800; font-size: 14px; letter-spacing: -0.01em; }
@@ -552,13 +549,13 @@
     isolation: isolate;
   }
   .quickswap-btn > * { transform: skewX(calc(var(--skew) * -1)); }
-  .quickswap-btn:first-child {
+  .quickswap-btn.is-first {
     border-left: 1px solid var(--fg);
     border-top-left-radius: 8px;
     border-bottom-left-radius: 8px;
     padding-left: 15px;
   }
-  .quickswap-btn:last-child {
+  .quickswap-btn.is-last {
     border-right: 1px solid var(--fg);
     border-top-right-radius: 8px;
     border-bottom-right-radius: 8px;
@@ -631,10 +628,6 @@
       </div>
     </nav>
 
-    <div class="sidebar-foot" data-i18n-html="sidebar.foot">
-      A Skillful wiki.<br/>
-      Built from scratch.
-    </div>
   </aside>
 
   <main class="main">
@@ -1132,14 +1125,12 @@ const LANG_DATA = {
       c.setAttribute("aria-selected", String(pendingLang === l.code));
       const badge = FLAG_BADGES[l.code];
       c.innerHTML = `
-        <span class="lang-flag-wrap">
-          <img class="lang-flag" src="flags/${l.flag}.webp" alt="" width="34" height="22" loading="lazy" decoding="async" />
-          ${badge ? `<span class="lang-flag-badge">${badge}</span>` : ""}
-        </span>
+        <img class="lang-flag" src="flags/${l.flag}.webp" alt="" width="34" height="22" loading="lazy" decoding="async" />
         <span class="lang-names">
           <span class="lang-native">${l.native}</span>
           <span class="lang-english">${l.english}</span>
-        </span>`;
+        </span>
+        ${badge ? `<span class="lang-flag-badge">${badge}</span>` : ""}`;
       c.addEventListener("click", () => {
         pendingLang = l.code;
         renderLangGrid();
@@ -1175,9 +1166,15 @@ const LANG_DATA = {
 
   function updateQuickswap() {
     qs.classList.add("is-visible");
+    const isEnglish = CURRENT_LANG === "en-US" || CURRENT_LANG === "en-UK";
     qs.querySelectorAll(".quickswap-btn[data-lang]").forEach(b => {
       b.setAttribute("aria-pressed", String(b.dataset.lang === CURRENT_LANG));
+      b.style.display = isEnglish ? "none" : "";
     });
+    const visible = [...qs.querySelectorAll(".quickswap-btn")].filter(b => b.style.display !== "none");
+    qs.querySelectorAll(".quickswap-btn").forEach(b => { b.classList.remove("is-first", "is-last"); });
+    if (visible[0]) visible[0].classList.add("is-first");
+    if (visible[visible.length - 1]) visible[visible.length - 1].classList.add("is-last");
     const changeFlag = document.getElementById("quickswap-change-flag");
     const currentLang = LANGUAGES.find(l => l.code === CURRENT_LANG);
     if (changeFlag && currentLang) {
