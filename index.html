@@ -55,13 +55,16 @@
     cursor: pointer;
   }
   .brand-mark {
-    width: 28px;
-    height: 28px;
-    background: var(--fg);
-    border-radius: 50%;
-    transition: transform var(--dur) var(--ease);
+    width: 32px;
+    height: 32px;
+    background-image: url("wStudioIcon.png");
+    background-size: cover;
+    background-position: center;
+    border-radius: 8px;
+    filter: invert(1);
+    transition: filter var(--dur) var(--ease-in-out), transform var(--dur) var(--ease);
   }
-  .brand:hover .brand-mark { transform: scale(1.15) rotate(20deg); }
+  .brand:hover .brand-mark { filter: invert(0); transform: scale(1.05); }
   .brand-name {
     font-weight: 800;
     font-size: 22px;
@@ -77,9 +80,24 @@
     padding: 12px 14px;
     cursor: pointer;
     border-radius: 14px;
-    transition: background var(--dur) var(--ease), color var(--dur) var(--ease), transform var(--dur) var(--ease);
+    overflow: hidden;
+    isolation: isolate;
+    transition: color var(--dur) var(--ease), transform var(--dur) var(--ease);
   }
-  .nav-item:hover { background: var(--surface); transform: translateX(4px); }
+  .nav-item::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background:
+      radial-gradient(var(--bg) 1.2px, transparent 1.4px) 0 0 / 7px 7px,
+      var(--fg);
+    transform: translateX(-101%);
+    transition: transform var(--dur) var(--ease-in-out);
+  }
+  .nav-item:hover { color: var(--bg); transform: translateX(4px); }
+  .nav-item:hover::before { transform: translateX(0); }
+  .nav-item:hover .nav-dot { background: var(--bg); }
   .nav-dot {
     width: 10px;
     height: 10px;
@@ -87,7 +105,7 @@
     background: var(--fg);
     transform: scale(0.4);
     opacity: 0.25;
-    transition: transform var(--dur) var(--ease), opacity var(--dur) var(--ease);
+    transition: transform var(--dur) var(--ease), opacity var(--dur) var(--ease), background var(--dur) var(--ease);
   }
   .nav-item[aria-selected="true"] .nav-dot { transform: scale(1); opacity: 1; }
   .nav-item[aria-selected="true"] { font-weight: 700; }
@@ -212,6 +230,71 @@
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
     gap: 16px;
+  }
+  .group { margin-bottom: 40px; }
+  .group-head {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    margin-bottom: 18px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--fg);
+  }
+  .group-title {
+    font-size: 28px;
+    font-weight: 900;
+    letter-spacing: -0.02em;
+  }
+  .group-sub {
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: var(--muted);
+  }
+  .rarity {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    border: 1px solid var(--fg);
+    border-radius: var(--radius);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-weight: 800;
+    margin-bottom: 14px;
+  }
+  .rarity-dot {
+    width: 8px; height: 8px; border-radius: 50%; background: var(--fg);
+  }
+  .rarity.common .rarity-dot { background: var(--fg); }
+  .rarity.rare .rarity-dot { background: var(--fg); transform: scale(1.2); }
+  .rarity.mythic { background: var(--fg); color: var(--bg); }
+  .rarity.mythic .rarity-dot { background: var(--bg); }
+  .rarity.ancestral { background: var(--fg); color: var(--bg); }
+  .rarity.ancestral .rarity-dot { background: var(--bg); }
+
+  .card-tag {
+    display: inline-block;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    font-weight: 800;
+    padding: 4px 8px;
+    border: 1px solid currentColor;
+    border-radius: var(--radius);
+    margin-top: 14px;
+    opacity: 0.7;
+  }
+
+  .no-results {
+    padding: 60px 24px;
+    text-align: center;
+    border: 1px dashed var(--fg);
+    border-radius: 20px;
+    color: var(--muted);
+    font-size: 15px;
   }
   .card {
     position: relative;
@@ -364,8 +447,8 @@
     <section class="page" data-page="artifacts">
       <div class="eyebrow"><span class="eyebrow-dot"></span> Artifacts</div>
       <h1 class="title">Artifacts.</h1>
-      <p class="lede">Powerful items scattered across the world. Collect, combine, wield.</p>
-      <div class="grid" id="grid-artifacts"></div>
+      <p class="lede">Gear-bound relics. Each slot pulls its runes from a different pool.</p>
+      <div id="artifacts-groups"></div>
     </section>
 
     <section class="page" data-page="runes">
@@ -381,44 +464,136 @@
       <p class="lede">Advanced techniques for those who want to push the limit.</p>
       <div class="grid" id="grid-master"></div>
     </section>
+
+    <section class="page" data-page="search">
+      <div class="eyebrow"><span class="eyebrow-dot"></span> Results</div>
+      <h1 class="title" id="search-title">Searching…</h1>
+      <p class="lede" id="search-lede">Matches across the whole wiki.</p>
+      <div class="grid" id="search-results"></div>
+    </section>
   </main>
 </div>
 
 <script>
-  const DATA = {
-    "getting-started": [
-      { title: "Install & launch", desc: "Get the game running for the first time." },
-      { title: "The basics", desc: "Movement, combat, and the core loop." },
-      { title: "Your first hour", desc: "What to focus on so you don't get stuck." },
-      { title: "Reading the UI", desc: "Every indicator and what it means." },
-    ],
-    "artifacts": [
-      { title: "Ember Core", desc: "A glowing relic that burns what it touches." },
-      { title: "Tideglass", desc: "Bends light. Reveals hidden paths." },
-      { title: "Voidshard", desc: "A piece of nothing. Dangerous to hold." },
-      { title: "Sunstone", desc: "Warm to the touch. Always points home." },
-      { title: "Hollow Bell", desc: "Rings only when no one hears it." },
-      { title: "Ironvein", desc: "Heavy. Refuses to be lifted by cowards." },
-    ],
-    "runes": [
-      { title: "Ka", desc: "Speed. Move faster, strike sooner." },
-      { title: "Ro", desc: "Reach. Extend the arc of every action." },
-      { title: "Vex", desc: "Chaos. Outcomes become unpredictable." },
-      { title: "Lun", desc: "Mirror. Reflects the next blow taken." },
-      { title: "Orn", desc: "Stillness. Briefly invulnerable at cost." },
-    ],
-    "master": [
-      { title: "Frame-perfect parry", desc: "Turn defense into offense." },
-      { title: "Rune stacking", desc: "Layered effects and hidden interactions." },
-      { title: "Speedrun routes", desc: "Optimal paths for any%." },
-      { title: "The secret ending", desc: "How to unlock what isn't on the map." },
-    ],
-  };
+  const GETTING_STARTED = [
+    { title: "Install & launch", desc: "Get the game running for the first time." },
+    { title: "The basics", desc: "Movement, combat, and the core loop." },
+    { title: "Your first hour", desc: "What to focus on so you don't get stuck." },
+    { title: "Reading the UI", desc: "Every indicator and what it means." },
+  ];
+
+  const ARTIFACTS = [
+    {
+      category: "Weapons Artifact",
+      sub: "Runes roll from the weapon pool",
+      rarities: {
+        Common: [
+          { title: "Vampire", desc: "Hitting a mob has a chance to steal the dealt damage as health." },
+          { title: "Executioner", desc: "Deals massively increased damage to mobs below 35% health." },
+          { title: "Thunderstrike", desc: "Attacks have a chance to call down a lightning bolt on the target." },
+          { title: "Venomfang", desc: "Hits apply a stacking poison effect that deals damage over time." },
+          { title: "Berserker", desc: "The lower your health, the more damage you deal." },
+          { title: "Echo", desc: "Each hit has a chance to strike again instantly as a phantom hit for reduced damage." },
+        ],
+        Rare: [
+          { title: "Hellchain", desc: "Damage dealt to one mob chains to up to 2 nearby mobs for reduced damage." },
+          { title: "Hexblade", desc: "Hitting a mob marks it. Marked mobs take bonus damage from all sources for a few seconds." },
+          { title: "Mire", desc: "Damaged mobs leave a cursed ground beneath them that deals the same amount of damage to other mobs that walk over it." },
+          { title: "Oni Thorns", desc: "Hits plant a thorn in the target. After 3 thorns, they all detonate, dealing massive combined damage." },
+        ],
+        Mythic: [
+          { title: "Souleater", desc: "Kills permanently increase your base damage by a small amount until you die." },
+          { title: "Doomclock", desc: "Hitting a mob starts a countdown. If the mob isn't dead within 5 seconds, it takes 50% of its max health as true damage." },
+          { title: "Eclipsefire", desc: "Hits alternate solar and lunar marks. Lunar marks slow and weaken mobs while solar marks burn them." },
+          { title: "Hexweave", desc: "Hits thread hex links to the target. At 5 links max, attacking another mob mirrors damage to the linked target." },
+        ],
+      },
+    },
+    {
+      category: "Armor Artifact",
+      sub: "Runes roll from the armor pool",
+      rarities: {
+        Common: [
+          { title: "Ironhide", desc: "Taking damage has a chance to temporarily give you invisibility." },
+          { title: "Regen", desc: "Increases your natural regeneration when not taking damage." },
+          { title: "Veil", desc: "After not taking damage for a few seconds, gain a shield that absorbs one hit." },
+          { title: "Repulse", desc: "Getting hit has a chance to push all nearby mobs away from you." },
+          { title: "Ancient Mending", desc: "Killing a mob restores a small amount of health." },
+        ],
+        Rare: [
+          { title: "Martyr", desc: "When hit below 30% health, release a burst of damage around you and gain brief invincibility." },
+          { title: "Absorb", desc: "Blocking an attack stores the damage. Your next hit releases the stored damage." },
+          { title: "Dreadplate", desc: "Nearby mobs excluding creepers deal less damage the closer they are to you." },
+        ],
+        Mythic: [
+          { title: "Gravebloom", desc: "Each time you take damage, cursed roots spread beneath you. After 4 hits, the roots erupt and restore your health." },
+          { title: "Hexmirror", desc: "Debuffs applied to you are reflected back to the attacker at double potency." },
+          { title: "Worldroot", desc: "While standing on natural ground, you passively drain health from all mobs in a radius." },
+          { title: "Magnetic", desc: "You pull in dropped loot when standing. Standing and sneaking pulls in any item around." },
+        ],
+      },
+    },
+    {
+      category: "Tools Artifact",
+      sub: "Runes roll from the tools pool",
+      rarities: {
+        Common: [
+          { title: "Smelter", desc: "Mining ore has a chance to drop the smelted version instead." },
+          { title: "Cubic Energy", desc: "Breaking a block deals damage to nearby monsters." },
+          { title: "Seedsurge", desc: "Planting crops has a chance to instantly grow them to full." },
+        ],
+        Rare: [
+          { title: "Terraform", desc: "Ability to break in a 3x1 area instead of 1x1." },
+          { title: "Veinminer", desc: "Mining an ore block breaks all connected ore of the same type." },
+          { title: "Abyssal Angler", desc: "Mining a block creates a temporary light source when in a dark area." },
+          { title: "Ancient Blue", desc: "Mining a block has a chance to drop an Ancient Lapis Lazuli." },
+        ],
+        Mythic: [
+          { title: "Rootcall", desc: "Harvesting a crop sends roots underground that seek out and pull ores to the surface." },
+          { title: "Abyssal Axolotl", desc: "Mining a block has a chance to regenerate your health and hunger." },
+          { title: "Riftpull", desc: "Mining a block teleports the drop into your inventory unless it is full." },
+          { title: "Ancient Blessing", desc: "Blocks you mine have a chance to upgrade into a richer variant." },
+        ],
+      },
+    },
+    {
+      category: "Misc Artifact",
+      sub: "Runes roll from the misc pool",
+      rarities: {
+        Common: [
+          { title: "Sturdy", desc: "Sneaking reduces the chance to lose durability." },
+        ],
+        Rare: [
+          { title: "Rebound", desc: "Your durability slowly regenerates as you take damage. Dying will undo any recent gain." },
+          { title: "Loss Revenge", desc: "Losing durability creates homing spirits that damage nearby monsters." },
+        ],
+        Ancestral: [
+          { title: "Ricochet", desc: "Every time you lose durability, there is a chance to gain it back in double." },
+        ],
+      },
+    },
+  ];
+
+  const RUNES_PAGE = [
+    { title: "How runes work", desc: "Runes are modifiers embedded in artifacts. Each artifact type rolls from its own pool." },
+    { title: "Rarity tiers", desc: "Common, Rare, Mythic, Ancestral. Higher rarity = stronger effects and rarer rolls." },
+    { title: "Rolling runes", desc: "Reforge at altars to reroll runes on an artifact. Costs scale with rarity." },
+    { title: "Stacking rules", desc: "Most runes don't stack with themselves. Some synergize — check the Master section." },
+  ];
+
+  const MASTER_PAGE = [
+    { title: "Rune synergies", desc: "Oni Thorns + Echo: phantom hits can plant thorns. Hexblade + anything AoE: stacking marks wreck crowds." },
+    { title: "Defensive timing", desc: "Veil's shield window is tight. Pair with Martyr for a panic-button chain." },
+    { title: "Tool builds", desc: "Veinminer + Riftpull + Smelter is the canonical mining loadout. Rootcall changes farming forever." },
+    { title: "The secret ending", desc: "Found only by those who've mastered the rift. Look for signs in the deep biomes." },
+  ];
 
   const pages = document.querySelectorAll(".page");
   const navItems = document.querySelectorAll(".nav-item");
+  let previousPage = "getting-started";
 
   function go(pageId) {
+    if (pageId !== "search") previousPage = pageId;
     navItems.forEach(n => n.setAttribute("aria-selected", String(n.dataset.nav === pageId)));
     pages.forEach(p => p.classList.toggle("is-active", p.dataset.page === pageId));
     const active = document.querySelector(`.page[data-page="${pageId}"]`);
@@ -431,10 +606,14 @@
   }
 
   document.querySelectorAll("[data-nav]").forEach(el => {
-    el.addEventListener("click", () => go(el.dataset.nav));
+    el.addEventListener("click", () => {
+      const s = document.getElementById("search");
+      if (s) s.value = "";
+      go(el.dataset.nav);
+    });
   });
 
-  function card(item) {
+  function card(item, tag) {
     const el = document.createElement("div");
     el.className = "card";
     el.innerHTML = `
@@ -442,6 +621,7 @@
         <div class="card-dot"></div>
         <div class="card-title">${item.title}</div>
         <div class="card-desc">${item.desc}</div>
+        ${tag ? `<div class="card-tag">${tag}</div>` : ""}
       </div>`;
     return el;
   }
@@ -457,27 +637,80 @@
     return el;
   }
 
-  function render() {
-    const steps = document.getElementById("steps");
-    steps.innerHTML = "";
-    DATA["getting-started"].forEach((x, i) => steps.appendChild(step(x, i)));
-    ["artifacts", "runes", "master"].forEach(key => {
-      const grid = document.getElementById(`grid-${key}`);
-      grid.innerHTML = "";
-      DATA[key].forEach(x => grid.appendChild(card(x)));
+  function renderArtifacts() {
+    const root = document.getElementById("artifacts-groups");
+    root.innerHTML = "";
+    ARTIFACTS.forEach(group => {
+      const g = document.createElement("div");
+      g.className = "group";
+      g.innerHTML = `
+        <div class="group-head">
+          <div class="group-title">${group.category}</div>
+          <div class="group-sub">${group.sub}</div>
+        </div>`;
+      Object.entries(group.rarities).forEach(([rarity, items]) => {
+        const wrap = document.createElement("div");
+        wrap.style.marginBottom = "28px";
+        wrap.innerHTML = `<div class="rarity ${rarity.toLowerCase()}"><span class="rarity-dot"></span>${rarity}</div>`;
+        const grid = document.createElement("div");
+        grid.className = "grid";
+        items.forEach(it => grid.appendChild(card(it)));
+        wrap.appendChild(grid);
+        g.appendChild(wrap);
+      });
+      root.appendChild(g);
     });
+  }
+
+  function render() {
+    const stepsEl = document.getElementById("steps");
+    stepsEl.innerHTML = "";
+    GETTING_STARTED.forEach((x, i) => stepsEl.appendChild(step(x, i)));
+
+    renderArtifacts();
+
+    const runesEl = document.getElementById("grid-runes");
+    runesEl.innerHTML = "";
+    RUNES_PAGE.forEach(x => runesEl.appendChild(card(x)));
+
+    const masterEl = document.getElementById("grid-master");
+    masterEl.innerHTML = "";
+    MASTER_PAGE.forEach(x => masterEl.appendChild(card(x)));
   }
   render();
 
+  function buildIndex() {
+    const idx = [];
+    GETTING_STARTED.forEach(x => idx.push({ ...x, source: "Getting Started", page: "getting-started" }));
+    ARTIFACTS.forEach(g => {
+      Object.entries(g.rarities).forEach(([rarity, items]) => {
+        items.forEach(x => idx.push({ ...x, source: `${g.category} · ${rarity}`, page: "artifacts" }));
+      });
+    });
+    RUNES_PAGE.forEach(x => idx.push({ ...x, source: "Runes", page: "runes" }));
+    MASTER_PAGE.forEach(x => idx.push({ ...x, source: "Master", page: "master" }));
+    return idx;
+  }
+  const INDEX = buildIndex();
+
   const search = document.getElementById("search");
+  const resultsEl = document.getElementById("search-results");
+  const searchTitle = document.getElementById("search-title");
+  const searchLede = document.getElementById("search-lede");
+
   search.addEventListener("input", () => {
     const q = search.value.trim().toLowerCase();
-    document.querySelectorAll(".card, .step").forEach(el => {
-      const title = el.querySelector(".card-title, h3")?.textContent.toLowerCase() ?? "";
-      const desc = el.querySelector(".card-desc, p")?.textContent.toLowerCase() ?? "";
-      const match = !q || title.includes(q) || desc.includes(q);
-      el.style.display = match ? "" : "none";
-    });
+    if (!q) { go(previousPage); return; }
+    const matches = INDEX.filter(x =>
+      x.title.toLowerCase().includes(q) ||
+      x.desc.toLowerCase().includes(q) ||
+      x.source.toLowerCase().includes(q)
+    );
+    searchTitle.textContent = matches.length ? `${matches.length} result${matches.length === 1 ? "" : "s"}.` : "Nothing found.";
+    searchLede.textContent = matches.length ? `Matches for "${search.value.trim()}" across the whole wiki.` : `Nothing matches "${search.value.trim()}". Try something else.`;
+    resultsEl.innerHTML = "";
+    matches.forEach(m => resultsEl.appendChild(card(m, m.source)));
+    go("search");
   });
 
 </script>
