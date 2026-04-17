@@ -14,7 +14,22 @@
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    position: relative;
   }
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background-image: radial-gradient(var(--fg) 1px, transparent 1.2px);
+    background-size: 14px 14px;
+    background-position: 0 0;
+    opacity: 0.06;
+    mask-image: radial-gradient(ellipse at 50% 0%, #000 0%, transparent 70%);
+    -webkit-mask-image: radial-gradient(ellipse at 50% 0%, #000 0%, transparent 70%);
+  }
+  .app { position: relative; z-index: 1; }
   button, input, textarea, select { font: inherit; color: inherit; background: none; border: none; outline: none; }
   a { color: inherit; text-decoration: none; }
   ::selection { background: #000; color: #fff; }
@@ -112,11 +127,12 @@
     margin-bottom: 40px;
   }
   .search {
-    flex: 1;
+    width: 100%;
+    max-width: 420px;
     position: relative;
     display: flex;
     align-items: center;
-    padding: 14px 20px;
+    padding: 12px 18px;
     border: 1px solid var(--fg);
     border-radius: var(--radius);
     transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
@@ -140,15 +156,31 @@
   .search input::placeholder { color: var(--muted); }
 
   .pill {
+    position: relative;
     padding: 12px 20px;
     border: 1px solid var(--fg);
     border-radius: var(--radius);
     font-weight: 600;
     font-size: 14px;
     cursor: pointer;
-    transition: background var(--dur) var(--ease), color var(--dur) var(--ease), transform var(--dur) var(--ease);
+    overflow: hidden;
+    isolation: isolate;
+    background: var(--bg);
+    transition: color var(--dur) var(--ease), transform var(--dur) var(--ease);
   }
-  .pill:hover { background: var(--fg); color: var(--bg); transform: translateY(-2px); }
+  .pill::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background:
+      radial-gradient(var(--bg) 1.2px, transparent 1.4px) 0 0 / 7px 7px,
+      var(--fg);
+    transform: translateY(101%);
+    transition: transform var(--dur) var(--ease-in-out);
+  }
+  .pill:hover { color: var(--bg); transform: translateY(-2px); }
+  .pill:hover::before { transform: translateY(0); }
 
   .page {
     display: none;
@@ -176,19 +208,41 @@
   .eyebrow-dot {
     width: 8px; height: 8px; border-radius: 50%; background: var(--fg);
   }
+  .banner {
+    position: relative;
+    padding: 40px 36px 44px;
+    border: 1px solid var(--fg);
+    border-radius: 28px;
+    overflow: hidden;
+    margin-bottom: 48px;
+    isolation: isolate;
+  }
+  .banner::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-image: radial-gradient(var(--fg) 1.6px, transparent 1.8px);
+    background-size: 10px 10px;
+    mask-image: linear-gradient(115deg, #000 0%, #000 28%, transparent 70%);
+    -webkit-mask-image: linear-gradient(115deg, #000 0%, #000 28%, transparent 70%);
+    opacity: 0.85;
+    transition: transform var(--dur-slow) var(--ease-in-out);
+  }
+  .banner:hover::before { transform: translateX(8px); }
   h1.title {
     font-size: clamp(48px, 7vw, 96px);
     font-weight: 900;
     line-height: 0.95;
     letter-spacing: -0.04em;
-    margin-bottom: 24px;
+    margin-bottom: 20px;
   }
   p.lede {
     font-size: 20px;
     line-height: 1.5;
     color: var(--muted);
     max-width: 640px;
-    margin-bottom: 48px;
+    margin-bottom: 0;
   }
 
   .grid {
@@ -215,8 +269,23 @@
     transition: transform var(--dur-slow) var(--ease-in-out);
     z-index: 0;
   }
+  .card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background-image: radial-gradient(var(--bg) 1.4px, transparent 1.6px);
+    background-size: 9px 9px;
+    opacity: 0;
+    transform: translateY(20%);
+    transition: opacity var(--dur-slow) var(--ease-in-out), transform var(--dur-slow) var(--ease-in-out);
+    pointer-events: none;
+    mask-image: linear-gradient(180deg, transparent 0%, #000 40%, #000 100%);
+    -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 40%, #000 100%);
+  }
   .card:hover { transform: translateY(-4px); box-shadow: 0 8px 0 0 var(--fg); }
   .card:hover::before { transform: translateY(0); }
+  .card:hover::after { opacity: 0.35; transform: translateY(0); }
   .card:hover .card-inner { color: var(--bg); }
   .card:hover .card-dot { background: var(--bg); }
   .card-inner {
@@ -264,9 +333,9 @@
     place-items: center;
     font-weight: 800;
     font-size: 16px;
-    transition: transform var(--dur-slow) var(--ease-in-out);
+    transition: transform var(--dur) var(--ease);
   }
-  .step:hover .step-num { transform: rotate(360deg); }
+  .step:hover .step-num { transform: scale(1.08); }
   .step-body h3 { font-size: 18px; font-weight: 800; letter-spacing: -0.01em; margin-bottom: 4px; }
   .step-body p { font-size: 14px; color: var(--muted); line-height: 1.5; }
 
@@ -335,34 +404,41 @@
         <span class="search-dot"></span>
         <input id="search" type="text" placeholder="Search the wiki…" autocomplete="off" />
       </label>
-      <button class="pill" id="randomBtn">Random</button>
     </div>
 
     <section class="page is-active" data-page="getting-started">
-      <div class="eyebrow"><span class="eyebrow-dot"></span> Getting Started</div>
-      <h1 class="title">Welcome,<br/>player.</h1>
-      <p class="lede">Everything you need to go from zero to capable. Read in order, or jump to what you need.</p>
+      <div class="banner">
+        <div class="eyebrow"><span class="eyebrow-dot"></span> Getting Started</div>
+        <h1 class="title">Welcome,<br/>player.</h1>
+        <p class="lede">Everything you need to go from zero to capable. Read in order, or jump to what you need.</p>
+      </div>
       <div class="steps" id="steps"></div>
     </section>
 
     <section class="page" data-page="artifacts">
-      <div class="eyebrow"><span class="eyebrow-dot"></span> Artifacts</div>
-      <h1 class="title">Artifacts.</h1>
-      <p class="lede">Powerful items scattered across the world. Collect, combine, wield.</p>
+      <div class="banner">
+        <div class="eyebrow"><span class="eyebrow-dot"></span> Artifacts</div>
+        <h1 class="title">Artifacts.</h1>
+        <p class="lede">Powerful items scattered across the world. Collect, combine, wield.</p>
+      </div>
       <div class="grid" id="grid-artifacts"></div>
     </section>
 
     <section class="page" data-page="runes">
-      <div class="eyebrow"><span class="eyebrow-dot"></span> Runes</div>
-      <h1 class="title">Runes.</h1>
-      <p class="lede">Modifiers of fate. Small symbols, massive consequences.</p>
+      <div class="banner">
+        <div class="eyebrow"><span class="eyebrow-dot"></span> Runes</div>
+        <h1 class="title">Runes.</h1>
+        <p class="lede">Modifiers of fate. Small symbols, massive consequences.</p>
+      </div>
       <div class="grid" id="grid-runes"></div>
     </section>
 
     <section class="page" data-page="master">
-      <div class="eyebrow"><span class="eyebrow-dot"></span> Master</div>
-      <h1 class="title">Master.</h1>
-      <p class="lede">Advanced techniques for those who want to push the limit.</p>
+      <div class="banner">
+        <div class="eyebrow"><span class="eyebrow-dot"></span> Master</div>
+        <h1 class="title">Master.</h1>
+        <p class="lede">Advanced techniques for those who want to push the limit.</p>
+      </div>
       <div class="grid" id="grid-master"></div>
     </section>
   </main>
@@ -464,10 +540,6 @@
     });
   });
 
-  document.getElementById("randomBtn").addEventListener("click", () => {
-    const keys = Object.keys(DATA);
-    go(keys[Math.floor(Math.random() * keys.length)]);
-  });
 </script>
 
 </body>
