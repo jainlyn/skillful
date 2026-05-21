@@ -208,7 +208,6 @@
     border-radius: 14px;
     transition: background var(--dur) var(--ease), color var(--dur) var(--ease), transform var(--dur) var(--ease);
   }
-  .nav-item:hover { background: var(--surface); transform: translateX(4px); }
   .nav-dot {
     width: 10px;
     height: 10px;
@@ -221,6 +220,11 @@
   .nav-item[aria-selected="true"] .nav-dot { transform: scale(1); opacity: 1; }
   .nav-item[aria-selected="true"] { font-weight: 700; }
   .nav-label { font-size: 15px; letter-spacing: -0.01em; }
+
+  @media (hover: hover) and (pointer: fine) {
+    .nav-item:hover { background: var(--surface); transform: translateX(4px); }
+    [dir="rtl"] .nav-item:hover { transform: translateX(-4px); }
+  }
 
   .sidebar-foot {
     margin-top: auto;
@@ -920,8 +924,7 @@
       gap: 18px 22px;
       align-items: center;
     }
-    .nav-item,
-    .nav-item:hover {
+    .nav-item {
       display: grid;
       grid-template-columns: 14px minmax(0, 1fr);
       align-items: center;
@@ -1170,7 +1173,6 @@
     box-shadow: 0 0 0 1px rgba(255,255,255,0.4);
   }
 
-  [dir="rtl"] .nav-item:hover { transform: translateX(-4px); }
   [dir="rtl"] .step:hover { transform: translateX(-6px); }
   [dir="rtl"] .quickswap {
     left: auto;
