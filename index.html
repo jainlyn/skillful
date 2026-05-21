@@ -121,17 +121,23 @@
   .ambient-cube.cube-b { --cube-rotate-start: -24deg; --cube-rotate-end: -14deg; --cube-shift-x: 10px; --cube-shift-y: 16px; }
   .ambient-cube.cube-c { --cube-rotate-start: 34deg; --cube-rotate-end: 24deg; --cube-shift-x: -16px; --cube-shift-y: -14px; }
   @media (max-width: 860px) {
+    .ambient-cube {
+      opacity: 0.28;
+    }
     .ambient-cube.cube-a {
-      top: 12vh;
-      right: -34px;
+      --cube-size: clamp(110px, 30vw, 180px);
+      top: 10vh;
+      right: 18px;
     }
     .ambient-cube.cube-b {
-      top: 56vh;
-      left: -30px;
+      --cube-size: clamp(92px, 24vw, 148px);
+      top: 42vh;
+      left: 8px;
     }
     .ambient-cube.cube-c {
-      right: -8px;
-      bottom: 12vh;
+      --cube-size: clamp(98px, 27vw, 160px);
+      right: 28px;
+      bottom: 14vh;
     }
   }
 
@@ -909,20 +915,43 @@
     .nav {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-auto-rows: minmax(34px, auto);
       width: 100%;
       gap: 18px 22px;
       align-items: center;
     }
     .nav-item,
     .nav-item:hover {
+      display: grid;
+      grid-template-columns: 14px minmax(0, 1fr);
+      align-items: center;
+      justify-content: start;
+      justify-self: stretch;
+      width: 100%;
       min-width: 0;
       min-height: 32px;
       padding: 0;
       border-radius: 0;
       background: transparent;
+      box-shadow: none;
+      transform: none;
+      overflow: hidden;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .nav-item[aria-selected="true"],
+    .nav-item[aria-selected="true"]:hover,
+    .nav-item:active,
+    .nav-item:focus,
+    .nav-item:focus-visible {
+      background: transparent;
+      border-radius: 0;
+      box-shadow: none;
       transform: none;
     }
     .nav-label {
+      display: block;
+      min-width: 0;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
