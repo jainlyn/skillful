@@ -13,6 +13,7 @@
     background: #ffffff;
     color: #000000;
     overflow-x: hidden;
+    position: relative;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     user-select: none;
@@ -43,6 +44,95 @@
     display: grid;
     grid-template-columns: 260px 1fr;
     min-height: 100vh;
+    position: relative;
+    z-index: 1;
+  }
+
+  .ambient-cubes {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+  }
+  .ambient-cube {
+    position: absolute;
+    width: calc(var(--cube-size) * 1.44);
+    height: var(--cube-size);
+    opacity: 0.16;
+    animation: cubeDrift var(--cube-duration) var(--ease-in-out) infinite alternate;
+    animation-delay: var(--cube-delay);
+  }
+  .ambient-cube-face {
+    position: absolute;
+    inset: 0;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.06);
+    background:
+      linear-gradient(135deg, rgba(0,0,0,0.032), rgba(0,0,0,0.058)),
+      rgba(0,0,0,0.018);
+  }
+  .ambient-cube-face.top {
+    clip-path: polygon(50% 0, 100% 25%, 50% 50%, 0 25%);
+    background:
+      linear-gradient(135deg, rgba(0,0,0,0.052), rgba(0,0,0,0.02)),
+      rgba(0,0,0,0.02);
+  }
+  .ambient-cube-face.left {
+    clip-path: polygon(0 25%, 50% 50%, 50% 100%, 0 75%);
+    background:
+      linear-gradient(180deg, rgba(0,0,0,0.044), rgba(0,0,0,0.016)),
+      rgba(0,0,0,0.015);
+  }
+  .ambient-cube-face.right {
+    clip-path: polygon(100% 25%, 50% 50%, 50% 100%, 100% 75%);
+    background:
+      linear-gradient(180deg, rgba(0,0,0,0.068), rgba(0,0,0,0.026)),
+      rgba(0,0,0,0.024);
+  }
+  .ambient-cube.cube-a {
+    --cube-size: clamp(120px, 16vw, 240px);
+    --cube-duration: 11s;
+    --cube-delay: -2.2s;
+    top: 10vh;
+    right: clamp(-28px, 4vw, 42px);
+    transform: rotate(18deg);
+  }
+  .ambient-cube.cube-b {
+    --cube-size: clamp(88px, 12vw, 170px);
+    --cube-duration: 14s;
+    --cube-delay: -6.8s;
+    top: 48vh;
+    left: clamp(-18px, 4vw, 36px);
+    transform: rotate(-24deg);
+  }
+  .ambient-cube.cube-c {
+    --cube-size: clamp(110px, 14vw, 210px);
+    --cube-duration: 13s;
+    --cube-delay: -4.4s;
+    right: 10vw;
+    bottom: 8vh;
+    transform: rotate(34deg);
+  }
+  @keyframes cubeDrift {
+    0% { transform: translate3d(0, 0, 0) rotate(var(--cube-rotate-start, 0deg)) scale(1); }
+    100% { transform: translate3d(var(--cube-shift-x, 14px), var(--cube-shift-y, -18px), 0) rotate(var(--cube-rotate-end, 8deg)) scale(1.04); }
+  }
+  .ambient-cube.cube-a { --cube-rotate-start: 18deg; --cube-rotate-end: 27deg; --cube-shift-x: 18px; --cube-shift-y: -10px; }
+  .ambient-cube.cube-b { --cube-rotate-start: -24deg; --cube-rotate-end: -14deg; --cube-shift-x: 10px; --cube-shift-y: 16px; }
+  .ambient-cube.cube-c { --cube-rotate-start: 34deg; --cube-rotate-end: 24deg; --cube-shift-x: -16px; --cube-shift-y: -14px; }
+  @media (max-width: 860px) {
+    .ambient-cube.cube-a {
+      top: 12vh;
+      right: -34px;
+    }
+    .ambient-cube.cube-b {
+      top: 56vh;
+      left: -30px;
+    }
+    .ambient-cube.cube-c {
+      right: -8px;
+      bottom: 12vh;
+    }
   }
 
   .sidebar {
@@ -733,7 +823,6 @@
   .filter-pill,
   .filter-pill::before,
   .lang-choice,
-  .lang-confirm,
   .quickswap-btn,
   .quickswap-btn::before,
   .login-input,
@@ -817,7 +906,28 @@
       gap: 20px;
     }
     .sidebar-foot { display: none; }
-    .nav { flex-direction: row; flex-wrap: wrap; gap: 6px; }
+    .nav {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      width: 100%;
+      gap: 18px 22px;
+      align-items: center;
+    }
+    .nav-item,
+    .nav-item:hover {
+      min-width: 0;
+      min-height: 32px;
+      padding: 0;
+      border-radius: 0;
+      background: transparent;
+      transform: none;
+    }
+    .nav-label {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-size: 15px;
+    }
     .main { padding: 32px 20px 64px; }
   }
 
@@ -897,14 +1007,6 @@
     box-shadow: 0 4px 0 0 var(--fg), 0 8px 0 0 #7a2cc4;
   }
 
-  .main {
-    transition: opacity 140ms var(--ease), transform 140ms var(--ease);
-  }
-  .main.lang-changing {
-    opacity: 0;
-    transform: translateY(4px);
-  }
-
   .lang-overlay {
     position: fixed;
     inset: 0;
@@ -973,22 +1075,6 @@
   .lang-native { font-weight: 800; font-size: 14px; letter-spacing: -0.01em; }
   .lang-english { font-size: 11px; opacity: 0.6; }
   .lang-choice[aria-selected="true"] { background: var(--fg); color: var(--bg); }
-  .lang-confirm {
-    margin-top: 24px;
-    width: 100%;
-    padding: 14px;
-    border: 1px solid var(--fg);
-    border-radius: var(--radius);
-    font-weight: 800;
-    font-size: 14px;
-    letter-spacing: 0.04em;
-    cursor: pointer;
-    background: var(--fg);
-    color: var(--bg);
-    transition: transform var(--dur) var(--ease), opacity var(--dur) var(--ease);
-  }
-  .lang-confirm:hover { transform: translateY(-2px); }
-
   .quickswap {
     position: fixed;
     bottom: 16px;
@@ -1222,6 +1308,24 @@
 </head>
 <body>
 
+<div class="ambient-cubes" aria-hidden="true">
+  <div class="ambient-cube cube-a">
+    <div class="ambient-cube-face top"></div>
+    <div class="ambient-cube-face left"></div>
+    <div class="ambient-cube-face right"></div>
+  </div>
+  <div class="ambient-cube cube-b">
+    <div class="ambient-cube-face top"></div>
+    <div class="ambient-cube-face left"></div>
+    <div class="ambient-cube-face right"></div>
+  </div>
+  <div class="ambient-cube cube-c">
+    <div class="ambient-cube-face top"></div>
+    <div class="ambient-cube-face left"></div>
+    <div class="ambient-cube-face right"></div>
+  </div>
+</div>
+
 <div class="login-overlay" id="loginOverlay" role="dialog" aria-modal="true">
   <form class="login-panel" id="loginForm">
     <div class="login-logo" aria-hidden="true"></div>
@@ -1352,7 +1456,6 @@
     <div class="lang-title" data-i18n="lang.title">Choose your language</div>
     <div class="lang-sub" data-i18n="lang.sub">You can change this later.</div>
     <div class="lang-grid" id="langGrid"></div>
-    <button class="lang-confirm" id="langConfirm" data-i18n="lang.confirm">Continue</button>
   </div>
 </div>
 
@@ -1974,10 +2077,8 @@ const LANG_DATA = {
     go("search");
   });
 
-  const mainEl = document.querySelector(".main");
   const langOverlay = document.getElementById("langOverlay");
   const langGrid = document.getElementById("langGrid");
-  const langConfirm = document.getElementById("langConfirm");
   let pendingLang = "en-US";
 
   const FLAG_BADGES = {
@@ -1999,8 +2100,7 @@ const LANG_DATA = {
         </span>
         ${badge ? `<span class="lang-flag-badge">${badge}</span>` : ""}`;
       c.addEventListener("click", () => {
-        pendingLang = l.code;
-        renderLangGrid();
+        applyLanguage(l.code, { promptLogin: requiresLogin() && !loggedIn });
       });
       langGrid.appendChild(c);
     });
@@ -2015,26 +2115,11 @@ const LANG_DATA = {
     langOverlay.classList.remove("is-open");
   }
 
-  function transitionLanguage(code, afterLoad) {
+  function applyLanguage(code, options = {}) {
     closeLangModal();
-    mainEl.classList.add("lang-changing");
-    setTimeout(() => {
-      loadLang(code);
-      if (afterLoad) afterLoad();
-      requestAnimationFrame(() => {
-        mainEl.classList.remove("lang-changing");
-      });
-    }, 120);
+    loadLang(code);
+    if (options.promptLogin) openLogin();
   }
-
-  langConfirm.addEventListener("click", () => {
-    transitionLanguage(pendingLang, () => {
-      if (!loggedIn) {
-        loginOverlay.classList.add("is-open");
-        creatorId.focus();
-      }
-    });
-  });
 
   const qs = document.getElementById("quickswap");
   qs.querySelectorAll(".quickswap-btn").forEach(b => {
@@ -2042,7 +2127,7 @@ const LANG_DATA = {
       if (b.dataset.action === "open-lang") {
         openLangModal();
       } else {
-        transitionLanguage(b.dataset.lang);
+        applyLanguage(b.dataset.lang);
       }
     });
   });
@@ -2074,18 +2159,50 @@ const LANG_DATA = {
   const creatorId = document.getElementById("creatorId");
   const creatorPassword = document.getElementById("creatorPassword");
   let loggedIn = false;
-  const logins = {
-    p4X: "pineapple",
-    L82: "orange",
-    z9Q: "catAndDog",
-    M6r: "grass block",
-    T31: "lady gaga",
-    b8N: "insert password",
-    R0k: "cool123",
-    x5V: "silverfish",
-    D72: "cutecow",
-    q1H: "uncutesheep",
+  const DEFAULT_CONFIG = {
+    format_version: "1.0.0",
+    wiki: {
+      require_login: false,
+      login_passes: []
+    }
   };
+  let APP_CONFIG = DEFAULT_CONFIG;
+  let logins = {};
+
+  function normalizeLoginId(id) {
+    return String(id || "").replace(/^#/, "");
+  }
+
+  function requiresLogin() {
+    return Boolean(APP_CONFIG?.wiki?.require_login);
+  }
+
+  function openLogin() {
+    loginOverlay.classList.add("is-open");
+    creatorId.focus();
+  }
+
+  async function loadConfig() {
+    try {
+      const response = await fetch("config.json", { cache: "no-store" });
+      if (!response.ok) throw new Error(`config ${response.status}`);
+      const config = await response.json();
+      APP_CONFIG = {
+        ...DEFAULT_CONFIG,
+        ...config,
+        wiki: {
+          ...DEFAULT_CONFIG.wiki,
+          ...(config.wiki || {})
+        }
+      };
+    } catch (error) {
+      APP_CONFIG = DEFAULT_CONFIG;
+    }
+    logins = Object.fromEntries((APP_CONFIG.wiki.login_passes || []).map(pass => [
+      normalizeLoginId(pass.id),
+      String(pass.password || "")
+    ]));
+  }
 
   creatorId.addEventListener("input", () => {
     creatorId.value = creatorId.value.replace(/[^a-z0-9]/gi, "").slice(0, 3);
@@ -2138,14 +2255,19 @@ const LANG_DATA = {
     loginForm.classList.remove("is-invalid");
   }
 
-  (function init() {
+  (async function init() {
+    await loadConfig();
     const saved = localStorage.getItem('skillful.lang');
     if (saved && LANG_DATA[saved]) {
       loadLang(saved);
     } else {
       loadLang('en-US');
     }
-    openLangModal();
+    if (requiresLogin()) {
+      openLangModal();
+    } else {
+      loggedIn = true;
+    }
   })();
 
 </script>

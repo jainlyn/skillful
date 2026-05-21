@@ -1,0 +1,48 @@
+{
+  "format_version": "1.0.0",
+  "wiki": {
+    "require_login": false,
+    "login_passes": [
+      {
+        "id": "#p4X",
+        "password": "pineapple"
+      },
+      {
+        "id": "#L82",
+        "password": "orange"
+      },
+      {
+        "id": "#z9Q",
+        "password": "catAndDog"
+      },
+      {
+        "id": "#M6r",
+        "password": "grass block"
+      },
+      {
+        "id": "#T31",
+        "password": "lady gaga"
+      },
+      {
+        "id": "#b8N",
+        "password": "insert password"
+      },
+      {
+        "id": "#R0k",
+        "password": "cool123"
+      },
+      {
+        "id": "#x5V",
+        "password": "silverfish"
+      },
+      {
+        "id": "#D72",
+        "password": "cutecow"
+      },
+      {
+        "id": "#q1H",
+        "password": "uncutesheep"
+      }
+    ]
+  }
+}
