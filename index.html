@@ -367,6 +367,53 @@
     color: var(--article-panel-fg);
     transition: background var(--dur) var(--ease), color var(--dur) var(--ease), border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
   }
+  .article-topline {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .article-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 38px;
+    padding: 8px 14px;
+    border: 1px solid var(--article-panel-border);
+    border-radius: var(--radius);
+    background: var(--article-panel-surface);
+    color: var(--article-panel-muted);
+    cursor: pointer;
+    transition: transform var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease);
+  }
+  .article-back:hover,
+  .article-breadcrumb:hover {
+    transform: translateY(-1px);
+    background: var(--article-pressed-bg);
+    color: var(--article-pressed-fg);
+    border-color: var(--article-pressed-bg);
+  }
+  .article-back-mark {
+    font-size: 18px;
+    line-height: 1;
+  }
+  .article-back-kicker {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    opacity: 0.68;
+  }
+  .article-breadcrumb {
+    margin-bottom: 0;
+    padding: 9px 12px;
+    border: 1px solid transparent;
+    border-radius: var(--radius);
+    cursor: pointer;
+    color: var(--article-panel-muted);
+    transition: transform var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease);
+  }
   .article-shell[data-article-size="medium"] {
     --article-title-size: clamp(42px, 6vw, 82px);
     --article-lede-size: 18px;
@@ -1295,6 +1342,17 @@
       gap: 10px;
       margin-bottom: 24px;
     }
+    .article-topline {
+      align-items: stretch;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .article-back,
+    .article-breadcrumb {
+      justify-content: center;
+      width: 100%;
+    }
     .article-tool-group {
       width: 100%;
       justify-content: center;
@@ -1773,7 +1831,17 @@
 
     <section class="page" data-page="article">
       <div class="article-shell" id="article-shell" data-article-size="default" data-article-contrast="default" data-article-font="default">
-        <div class="eyebrow"><span class="eyebrow-dot"></span><span data-i18n="nav.getting-started">Getting Started</span></div>
+        <div class="article-topline">
+          <button class="article-back" type="button" data-article-back aria-label="Back to Getting Started">
+            <span class="article-back-mark" aria-hidden="true">&lt;</span>
+            <span class="article-back-kicker">Back to</span>
+            <span data-i18n="nav.getting-started">Getting Started</span>
+          </button>
+          <button class="eyebrow article-breadcrumb" type="button" data-article-back aria-label="Go to Getting Started">
+            <span class="eyebrow-dot"></span>
+            <span data-i18n="nav.getting-started">Getting Started</span>
+          </button>
+        </div>
         <h1 class="title" id="article-title">Install &amp; launch</h1>
         <p class="lede" id="article-lede">Get the game running for the first time.</p>
         <div class="article-tools" aria-label="Article reading tools">
@@ -1915,6 +1983,7 @@ const LANG_DATA = {
 
 Object.values(LANG_DATA).forEach(languageData => {
   languageData["gs.compatibility.desc"] = "How the game determines if an item is eligible for Rifts & Runes system.";
+  languageData["rune.void-restore"] = "When an item runs out of durability, it collapses into a Void Capsule. The capsule can be repaired to restore the item to its full form, preventing it from being lost.";
 });
 
 
@@ -2189,6 +2258,7 @@ Using this information, the item may still be identified correctly even if it la
         ],
         Mythic: [
           { name: "Ricochet" },
+          { name: "Void Restore" },
         ],
       },
     },
@@ -2338,12 +2408,20 @@ Using this information, the item may still be identified correctly even if it la
     });
   }
 
+  function returnToGettingStarted() {
+    search.value = "";
+    go("getting-started");
+  }
+
   document.querySelectorAll("[data-nav]").forEach(el => {
     el.addEventListener("click", () => {
       const s = document.getElementById("search");
       if (s) s.value = "";
       go(el.dataset.nav);
     });
+  });
+  document.querySelectorAll("[data-article-back]").forEach(el => {
+    el.addEventListener("click", returnToGettingStarted);
   });
   document.querySelectorAll("[data-article-size]").forEach(el => {
     el.addEventListener("click", () => {
