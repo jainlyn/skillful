@@ -904,7 +904,11 @@
   .step-body p { font-size: 14px; color: var(--muted); line-height: 1.5; }
 
   @media (max-width: 860px) {
-    .app { grid-template-columns: 1fr; }
+    .app {
+      grid-template-columns: 1fr;
+      align-content: start;
+      align-items: start;
+    }
     .sidebar {
       position: static;
       height: auto;
