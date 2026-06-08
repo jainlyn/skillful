@@ -414,6 +414,20 @@
     color: var(--article-panel-muted);
     transition: transform var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease);
   }
+  .article-read-time {
+    display: inline-flex;
+    align-items: center;
+    min-height: 34px;
+    padding: 7px 11px;
+    border: 1px solid var(--article-panel-border);
+    border-radius: 999px;
+    background: var(--article-panel-surface);
+    color: var(--article-panel-muted);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
   .article-shell[data-article-size="medium"] {
     --article-title-size: clamp(42px, 6vw, 82px);
     --article-lede-size: 18px;
@@ -687,8 +701,54 @@
     margin-top: 8px;
   }
   .article-code + p,
-  .article-list + p {
+  .article-list + p,
+  .article-gallery-block + p {
     margin-top: 16px;
+  }
+  .article-gallery-block {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 10px;
+    max-width: 920px;
+    margin-top: 18px;
+  }
+  .article-gallery-item {
+    position: relative;
+    min-height: 260px;
+    border: 1px solid var(--article-panel-border);
+    border-radius: 18px;
+    overflow: hidden;
+    background: var(--article-panel-surface);
+    box-shadow: inset 0 1px 0 var(--article-panel-strong);
+  }
+  .article-gallery-item:first-child:nth-last-child(2),
+  .article-gallery-item:first-child:nth-last-child(2) ~ .article-gallery-item {
+    aspect-ratio: 4 / 5;
+  }
+  .article-gallery-item:only-child {
+    aspect-ratio: 16 / 9;
+  }
+  .article-gallery-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .article-gallery-item:only-child img {
+    object-fit: contain;
+  }
+  .article-gallery-caption {
+    position: absolute;
+    left: 10px;
+    bottom: 10px;
+    padding: 5px 9px;
+    border-radius: 999px;
+    background: rgba(0,0,0,0.72);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
   }
 
   .grid {
@@ -982,9 +1042,9 @@
   }
   .card:hover { transform: translateY(-4px); box-shadow: 0 8px 0 0 var(--fg); }
   .card.is-expandable { cursor: pointer; }
-  .card:hover::before { transform: translateY(0); }
-  .card:hover .card-inner { color: var(--bg); }
-  .card:hover .card-dot { background: var(--bg); }
+  .card.is-expanded::before { transform: translateY(0); }
+  .card.is-expanded .card-inner { color: var(--bg); }
+  .card.is-expanded .card-dot { background: var(--bg); }
   .card.is-expanded {
     min-height: 260px;
   }
@@ -997,7 +1057,7 @@
   }
   .card-inner {
     position: relative;
-    z-index: 2;
+    z-index: 4;
     transition: color var(--dur) var(--ease);
   }
   .card-icon-stage {
@@ -1039,7 +1099,7 @@
   }
   .card-icon {
     position: relative;
-    z-index: 2;
+    z-index: 4;
     width: 58px;
     height: 58px;
     object-fit: contain;
@@ -1132,7 +1192,10 @@
     font-size: 20px;
     font-weight: 800;
     letter-spacing: -0.02em;
+    line-height: 1.08;
     margin-bottom: 8px;
+    overflow-wrap: anywhere;
+    word-break: break-word;
   }
   .card-desc {
     font-size: 14px;
@@ -1226,32 +1289,93 @@
     100% { box-shadow: 0 0 0 0 var(--fg); transform: translateY(0) scale(1); }
   }
 
-  .steps { display: flex; flex-direction: column; gap: 14px; }
-  .step {
-    display: flex;
-    gap: 20px;
-    padding: 24px;
+  .article-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 14px;
+    margin-top: 28px;
+  }
+  .article-tile {
+    position: relative;
+    min-height: 168px;
+    padding: 22px;
     border: 1px solid var(--fg);
     border-radius: 20px;
+    background: var(--bg);
+    overflow: hidden;
     cursor: pointer;
-    transition: transform var(--dur) var(--ease), background var(--dur) var(--ease);
+    transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease), background var(--dur) var(--ease);
   }
-  .step:hover { transform: translateX(6px); background: var(--surface); }
-  .step-num {
-    flex-shrink: 0;
-    width: 44px; height: 44px;
+  .article-tile::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(135deg, rgba(0,0,0,0.05), transparent 42%),
+      radial-gradient(var(--fg) 1px, transparent 1.35px) 100% 0 / 12px 12px;
+    opacity: 0.12;
+    pointer-events: none;
+  }
+  .article-tile::after {
+    content: "";
+    position: absolute;
+    right: 18px;
+    bottom: 18px;
+    width: 22px;
+    height: 22px;
+    border-top: 2px solid var(--fg);
+    border-right: 2px solid var(--fg);
+    transform: translate(-6px, 6px) rotate(45deg);
+    opacity: 0;
+    transition: transform var(--dur) var(--ease), opacity var(--dur) var(--ease);
+  }
+  .article-tile:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 0 0 var(--fg);
+    background: var(--surface);
+  }
+  .article-tile:hover::after {
+    opacity: 1;
+    transform: translate(0, 0) rotate(45deg);
+  }
+  .article-tile-kicker {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    margin-bottom: 18px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .article-tile-kicker::before {
+    content: "";
+    width: 8px;
+    height: 8px;
     border-radius: 50%;
     background: var(--fg);
-    color: var(--bg);
-    display: grid;
-    place-items: center;
-    font-weight: 800;
-    font-size: 16px;
-    transition: transform var(--dur) var(--ease);
   }
-  .step:hover .step-num { transform: scale(1.08); }
-  .step-body h3 { font-size: 18px; font-weight: 800; letter-spacing: -0.01em; margin-bottom: 4px; }
-  .step-body p { font-size: 14px; color: var(--muted); line-height: 1.5; }
+  .article-tile-title {
+    position: relative;
+    z-index: 1;
+    max-width: 92%;
+    margin-bottom: 10px;
+    font-size: 24px;
+    line-height: 1.08;
+    font-weight: 900;
+    overflow-wrap: anywhere;
+  }
+  .article-tile-desc {
+    position: relative;
+    z-index: 1;
+    max-width: 88%;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.5;
+  }
 
   @media (max-width: 860px) {
     .app {
@@ -1826,49 +1950,50 @@
       <div class="eyebrow"><span class="eyebrow-dot"></span><span data-i18n="nav.getting-started">Getting Started</span></div>
       <h1 class="title" data-i18n-html="getting-started.title">Welcome,<br/>player.</h1>
       <p class="lede" data-i18n="getting-started.lede">Everything you need to go from zero to capable. Read in order, or jump to what you need.</p>
-      <div class="steps" id="steps"></div>
+      <div class="article-gallery" id="gallery-getting-started"></div>
     </section>
 
     <section class="page" data-page="article">
       <div class="article-shell" id="article-shell" data-article-size="default" data-article-contrast="default" data-article-font="default">
         <div class="article-topline">
-          <button class="article-back" type="button" data-article-back aria-label="Back to Getting Started">
+          <button class="article-back" type="button" data-article-back data-i18n-aria-label="article.back.aria" aria-label="">
             <span class="article-back-mark" aria-hidden="true">&lt;</span>
-            <span class="article-back-kicker">Back to</span>
-            <span data-i18n="nav.getting-started">Getting Started</span>
+            <span class="article-back-kicker" data-i18n="article.back">Back to</span>
+            <span id="article-back-label">Getting Started</span>
           </button>
-          <button class="eyebrow article-breadcrumb" type="button" data-article-back aria-label="Go to Getting Started">
+          <button class="eyebrow article-breadcrumb" type="button" data-article-back data-i18n-aria-label="article.gallery.aria" aria-label="">
             <span class="eyebrow-dot"></span>
-            <span data-i18n="nav.getting-started">Getting Started</span>
+            <span id="article-breadcrumb-label">Getting Started</span>
           </button>
+          <span class="article-read-time" id="article-read-time"></span>
         </div>
         <h1 class="title" id="article-title">Install &amp; launch</h1>
         <p class="lede" id="article-lede">Get the game running for the first time.</p>
-        <div class="article-tools" aria-label="Article reading tools">
-          <div class="article-tool-group" role="group" aria-label="Text size">
-            <button class="article-tool" type="button" data-article-size="default" aria-pressed="true" title="Default text size" aria-label="Default text size">
+        <div class="article-tools" data-i18n-aria-label="article.tools.aria" aria-label="">
+          <div class="article-tool-group" role="group" data-i18n-aria-label="article.tools.size" aria-label="">
+            <button class="article-tool" type="button" data-article-size="default" aria-pressed="true" data-i18n-title="article.tools.size.default" data-i18n-aria-label="article.tools.size.default" title="" aria-label="">
               <span class="article-tool-size is-large">A</span>
             </button>
-            <button class="article-tool" type="button" data-article-size="medium" aria-pressed="false" title="Medium text size" aria-label="Medium text size">
+            <button class="article-tool" type="button" data-article-size="medium" aria-pressed="false" data-i18n-title="article.tools.size.medium" data-i18n-aria-label="article.tools.size.medium" title="" aria-label="">
               <span class="article-tool-size is-medium">A</span>
             </button>
-            <button class="article-tool" type="button" data-article-size="small" aria-pressed="false" title="Small text size" aria-label="Small text size">
+            <button class="article-tool" type="button" data-article-size="small" aria-pressed="false" data-i18n-title="article.tools.size.small" data-i18n-aria-label="article.tools.size.small" title="" aria-label="">
               <span class="article-tool-size is-small">a</span>
             </button>
           </div>
-          <div class="article-tool-group" role="group" aria-label="Article contrast">
-            <button class="article-tool" type="button" data-article-contrast="default" aria-pressed="true" title="Default contrast" aria-label="Default contrast">
+          <div class="article-tool-group" role="group" data-i18n-aria-label="article.tools.contrast" aria-label="">
+            <button class="article-tool" type="button" data-article-contrast="default" aria-pressed="true" data-i18n-title="article.tools.contrast.default" data-i18n-aria-label="article.tools.contrast.default" title="" aria-label="">
               <span class="article-tool-sun" aria-hidden="true"></span>
             </button>
-            <button class="article-tool" type="button" data-article-contrast="warm" aria-pressed="false" title="Warm high contrast" aria-label="Warm high contrast">
+            <button class="article-tool" type="button" data-article-contrast="warm" aria-pressed="false" data-i18n-title="article.tools.contrast.warm" data-i18n-aria-label="article.tools.contrast.warm" title="" aria-label="">
               <span class="article-tool-sun is-warm" aria-hidden="true"></span>
             </button>
           </div>
-          <div class="article-tool-group" role="group" aria-label="Article font">
-            <button class="article-tool" type="button" data-article-font="default" aria-pressed="true" title="Default reading font" aria-label="Default reading font">
+          <div class="article-tool-group" role="group" data-i18n-aria-label="article.tools.font" aria-label="">
+            <button class="article-tool" type="button" data-article-font="default" aria-pressed="true" data-i18n-title="article.tools.font.default" data-i18n-aria-label="article.tools.font.default" title="" aria-label="">
               <span class="article-tool-font">A</span>
             </button>
-            <button class="article-tool" type="button" data-article-font="dyslexic" aria-pressed="false" title="Dyslexia-friendly font" aria-label="Dyslexia-friendly font">
+            <button class="article-tool" type="button" data-article-font="dyslexic" aria-pressed="false" data-i18n-title="article.tools.font.dyslexic" data-i18n-aria-label="article.tools.font.dyslexic" title="" aria-label="">
               <span class="article-tool-font"><span>A</span><span class="article-tool-font-dyslexic">D</span></span>
             </button>
           </div>
@@ -1889,32 +2014,35 @@
       <div class="eyebrow"><span class="eyebrow-dot"></span><span data-i18n="nav.runes">Runes</span></div>
       <h1 class="title" data-i18n="runes.title">Runes.</h1>
       <p class="lede" data-i18n="runes.lede">Modifiers of fate. Small symbols, massive consequences.</p>
-      <div class="grid" id="grid-runes"></div>
+      <div class="article-gallery" id="gallery-runes"></div>
     </section>
 
     <section class="page" data-page="master">
       <div class="eyebrow"><span class="eyebrow-dot"></span><span data-i18n="nav.master">Master's Station</span></div>
       <h1 class="title" data-i18n="master.title">Master's Station.</h1>
       <p class="lede" data-i18n="master.lede">Advanced techniques for those who want to push the limit.</p>
-      <div class="grid" id="grid-master"></div>
+      <div class="article-gallery" id="gallery-master"></div>
     </section>
 
     <section class="page" data-page="runic-anvil">
       <div class="eyebrow"><span class="eyebrow-dot"></span><span data-i18n="nav.runic-anvil">Runic Anvil</span></div>
       <h1 class="title" data-i18n="runic-anvil.title">Runic Anvil.</h1>
       <p class="lede" data-i18n="runic-anvil.lede">Reforge, empower, and bind runes to your gear.</p>
+      <div class="article-gallery" id="gallery-runic-anvil"></div>
     </section>
 
     <section class="page" data-page="rifts">
       <div class="eyebrow"><span class="eyebrow-dot"></span><span data-i18n="nav.rifts">Rifts</span></div>
       <h1 class="title" data-i18n="rifts.title">Rifts.</h1>
       <p class="lede" data-i18n="rifts.lede">Tears in reality. Step through for rare loot and deadly encounters.</p>
+      <div class="article-gallery" id="gallery-rifts"></div>
     </section>
 
     <section class="page" data-page="items-materials">
       <div class="eyebrow"><span class="eyebrow-dot"></span><span data-i18n="nav.items-materials">Items &amp; Materials</span></div>
       <h1 class="title" data-i18n="items-materials.title">Items &amp; Materials.</h1>
       <p class="lede" data-i18n="items-materials.lede">Everything you can gather, craft, or find in the world.</p>
+      <div class="article-gallery" id="gallery-items-materials"></div>
     </section>
 
     <section class="page" data-page="search">
@@ -1982,196 +2110,258 @@ const LANG_DATA = {
 };
 
 Object.values(LANG_DATA).forEach(languageData => {
+  languageData["article.back"] = "Back to";
+  languageData["article.back.aria"] = "Back to articles";
+  languageData["article.gallery.aria"] = "Go to article gallery";
+  languageData["article.tools.aria"] = "Article reading tools";
+  languageData["article.tools.size"] = "Text size";
+  languageData["article.tools.size.default"] = "Default text size";
+  languageData["article.tools.size.medium"] = "Medium text size";
+  languageData["article.tools.size.small"] = "Small text size";
+  languageData["article.tools.contrast"] = "Article contrast";
+  languageData["article.tools.contrast.default"] = "Default contrast";
+  languageData["article.tools.contrast.warm"] = "Warm high contrast";
+  languageData["article.tools.font"] = "Article font";
+  languageData["article.tools.font.default"] = "Default reading font";
+  languageData["article.tools.font.dyslexic"] = "Dyslexia-friendly font";
+  languageData["article.show-less"] = "Show Less";
+  languageData["article.origin.aria"] = "Content path";
+  languageData["readtime.rtlText"] = "";
+  languageData["readtime.ltrText"] = " min read";
+  languageData["artifacts.filter.common"] = "Common Only";
+  languageData["artifacts.filter.rare"] = "Rare Only";
+  languageData["artifacts.filter.mythic"] = "Mythic Only";
+  languageData["rarity.common"] = "Common";
+  languageData["rarity.rare"] = "Rare";
+  languageData["rarity.mythic"] = "Mythic";
+  languageData["artifacts.detail"] = "{slot} {rarity} rarity.";
   languageData["gs.compatibility.desc"] = "How the game determines if an item is eligible for Rifts & Runes system.";
-  languageData["rune.void-restore"] = "When an item runs out of durability, it collapses into a Void Capsule. The capsule can be repaired to restore the item to its full form, preventing it from being lost.";
-});
+  languageData["gs.journey.title"] = "Our journey";
+  languageData["gs.journey.desc"] = "How we developed Rifts & Runes and shaped it into what it is now.";
+  languageData["article.gs.install"] = `<section>Start clean</section>
 
+Boot the game on a stable setup first. Before you care about runes, rifts, or build depth, make sure the base game launches cleanly and the world opens without warnings or missing content.
 
-  const GETTING_STARTED = [
-    {
-      id: "gs.install",
-      sections: [
-        {
-          heading: "Start clean",
-          paragraphs: [
-            "Boot the game on a stable setup first. Before you care about runes, rifts, or build depth, make sure the base game launches cleanly and the world opens without warnings or missing content.",
-            "A clean first launch tells you the foundation is sound. If the game is already unstable before Skillful enters the picture, every later problem becomes harder to trace."
-          ]
-        },
-        {
-          heading: "Enable Skillful after that",
-          paragraphs: [
-            "Once the base profile behaves, add Skillful and launch again. Confirm the pack loads, the UI appears correctly, and your first world opens without missing textures, empty pages, or broken gear categories.",
-            "The goal is not to optimize yet. The goal is to confirm the system is alive and readable before you start chasing rolls or progression."
-          ]
-        }
-      ]
-    },
-    {
-      id: "gs.basics",
-      sections: [
-        {
-          heading: "Know the loop",
-          paragraphs: [
-            "Skillful revolves around finding eligible gear, rolling runes from the correct pool, and turning those effects into a build with a clear purpose. Weapons, armor, tools, and misc items do not all pull from the same rune list.",
-            "That split matters early. If you know what slot you are holding, you already know what family of outcomes the system can produce."
-          ]
-        },
-        {
-          heading: "Play around the item",
-          paragraphs: [
-            "A strong rune is only strong when the item and the situation support it. Read what your gear actually does, then lean into the effect instead of treating every drop as interchangeable.",
-            "The fastest players are not just lucky. They recognize when a roll wants aggression, control, sustain, or farming value, then they adjust around that."
-          ]
-        }
-      ]
-    },
-    {
-      id: "gs.firsthour",
-      sections: [
-        {
-          heading: "Prioritize momentum",
-          paragraphs: [
-            "In your first hour, focus on getting one workable item online instead of trying to perfect every slot. A usable early piece teaches the system faster than hoarding six half-finished ideas.",
-            "You are looking for stability, not a dream build. Once one slot starts carrying its weight, the rest of the system becomes easier to learn."
-          ]
-        },
-        {
-          heading: "Do not overcommit too early",
-          paragraphs: [
-            "Early resources are better spent on learning what a pool can offer than forcing one exact outcome immediately. If a roll is serviceable and helps you survive or clear faster, keep moving.",
-            "The first hour should teach you which categories feel valuable to you. Save hard optimization for after the system has already paid you back once."
-          ]
-        }
-      ]
-    },
-    {
-      id: "gs.compatibility",
-      markup: `<Title?S>How Artifact Item Detection Works<Title?E>
+A clean first launch tells you the foundation is sound. If the game is already unstable before Skillful enters the picture, every later problem becomes harder to trace.
 
-Each Artifact can only be applied to a specific pool of items.  
+<section>Enable Skillful after that</section>
+
+Once the base profile behaves, add Skillful and launch again. Confirm the pack loads, the UI appears correctly, and your first world opens without missing textures, empty pages, or broken gear categories.
+
+The goal is not to optimize yet. The goal is to confirm the system is alive and readable before you start chasing rolls or progression.`;
+  languageData["article.gs.basics"] = `<section>Know the loop</section>
+
+Skillful revolves around finding eligible gear, rolling runes from the correct pool, and turning those effects into a build with a clear purpose. Weapons, armor, tools, and misc items do not all pull from the same rune list.
+
+That split matters early. If you know what slot you are holding, you already know what family of outcomes the system can produce.
+
+<section>Play around the item</section>
+
+A strong rune is only strong when the item and the situation support it. Read what your gear actually does, then lean into the effect instead of treating every drop as interchangeable.
+
+The fastest players are not just lucky. They recognize when a roll wants aggression, control, sustain, or farming value, then they adjust around that.`;
+  languageData["article.gs.firsthour"] = `<section>Prioritize momentum</section>
+
+In your first hour, focus on getting one workable item online instead of trying to perfect every slot. A usable early piece teaches the system faster than hoarding six half-finished ideas.
+
+You are looking for stability, not a dream build. Once one slot starts carrying its weight, the rest of the system becomes easier to learn.
+
+<section>Do not overcommit too early</section>
+
+Early resources are better spent on learning what a pool can offer than forcing one exact outcome immediately. If a roll is serviceable and helps you survive or clear faster, keep moving.
+
+The first hour should teach you which categories feel valuable to you. Save hard optimization for after the system has already paid you back once.`;
+  languageData["article.gs.compatibility"] = `<title>How Artifact Item Detection Works</title>
+
+Each Artifact can only be applied to a specific pool of items.
 To determine whether an item belongs to that pool, our system performs several checks.
 
-<Section?S>Item TypeId<Section?E>
+<section>Item TypeId</section>
 
 For non-technical players, an item TypeId is the hidden internal name Minecraft uses for every item.
 
 For example:
-<Code?S>
+<code>
 minecraft:cooked_beef
-<Code?E>
+</code>
 
 A Steak item is not internally called "Steak" or "Cooked Beef"; instead, it is called \`minecraft:cooked_beef\`.
 
 Using this information, the system searches for keywords inside the TypeId, such as:
 
-<List?S>
+<list>
 - _sword
 - _axe
 - _pickaxe
 - _helmet
-<List?E>
+</list>
 
 This helps determine whether the item is likely a weapon, armor piece, tool, and so on.
 
-<Section?S>Item Components<Section?E>
+<section>Item Components</section>
 
 Item Components define how an item behaves.
 
 For example, if an item should be wearable, it may contain:
-<Code?S>
+<code>
 "minecraft:equippable": {}
-<Code?E>
+</code>
 
 By checking the components attached to an item, we can make a reliable assumption about what type of item it is.
 
 Examples:
-<List?S>
+<list>
 - Weapons
 - Armor
 - Pickaxes
 - Tools
-<List?E>
+</list>
 
-<Section?S>Item Tags<Section?E>
+<section>Item Tags</section>
 
-Tags are special identifiers that do not directly add behavior.  
+Tags are special identifiers that do not directly add behavior.
 Their purpose is to provide context for an item.
 
 Minecraft includes many built-in tags, and developers can also create custom ones.
 
 The system checks tags for identifiers such as:
-<Code?S>
+<code>
 weapon
 sword
 tool
 armor
-<Code?E>
+</code>
 
 These tags help the system better understand the intended purpose of the item.
 
-<Section?S>Determining Item Function<Section?E>
+<section>Determining Item Function</section>
 
 Using all the information above, the system makes an educated, mostly accurate guess about the item's function and category.
 
 However, there are edge cases where a developer:
-<List?S>
+<list>
 - Did not follow a common TypeId naming scheme
 - Did not assign expected components
 - Did not use useful tags
-<List?E>
+</list>
 
 In those situations, the system falls back to a secondary method.
 
-<Section?S>Item Practical Usage<Section?E>
+<section>Item Practical Usage</section>
 
 Whenever a player uses an item, the game monitors what happens during that usage.
 
 The system checks things such as:
-<List?S>
+<list>
 - Was the item used against a mob?
 - How much damage did it deal?
 - Did it trigger unusual effects?
 - Was it mainly used for mining, combat, or defense?
-<List?E>
+</list>
 
-Based on these observations, hidden internal scores are assigned to the item.  
+Based on these observations, hidden internal scores are assigned to the item.
 Those scores are then used to estimate whether the item behaves more like a weapon, armor piece, or tool.
 
-<Section?S>Mob Item Detection<Section?E>
+<section>Mob Item Detection</section>
 
 This logic also applies to items used by mobs.
 
 For example, a zombie or a custom mob may wear a special crown item that grants abilities.
 
 The system analyzes:
-<List?S>
+<list>
 - Which equipment slot the item occupies
 - How much durability or protection it provides
 - Whether it reduces incoming damage
 - How it behaves during combat
-<List?E>
+</list>
 
-Using this information, the item may still be identified correctly even if it lacks proper tags, components, or naming conventions.`
+Using this information, the item may still be identified correctly even if it lacks proper tags, components, or naming conventions.`;
+  languageData["article.gs.devtools"] = `<section>Use the tools to inspect state</section>
+
+Developer-facing tools exist to help you see what the system thinks is happening. Overlays, dumps, and hooks are useful because they turn invisible state into something you can actually reason about.
+
+That matters most when a build behaves differently than expected. Good inspection beats guessing.
+
+<section>Tinker with purpose</section>
+
+Debug tools are strongest when you already have a question. Check what item was classified as, what pool was used, or what effect chain actually fired, then compare that against the result you saw in play.
+
+Modders and heavy tinkerers move faster when they treat tooling as a reading instrument, not just a pile of switches.`;
+  languageData["article.gs.journey"] = `<title>Our Journey</title>
+
+This add-on has been in the making for over 6 months, starting from March 2026 as a simple idea which quickly blossomed into a full-on rich add-on.
+
+<section>Early Sketches</section>
+
+At this point, our main goal was not to build or develop anything just yet, but to pour all of our ideas together and come up with something that looked good, felt fun, and made sense.
+
+Surprisingly, most of the sketches for our custom UI survived and were directly implemented with very minimal changes and revisions.
+
+We also liked the idea of mysterious eyes that can see and locate rifts, as if they are all-knowing old travelers from an ancient realm, slowly remembering the path back to the portals that brought them here millions of years ago.
+
+On the other hand, the Ancient Void concept was very minimal. We had no idea what to do with it, or whether it was even going to work out.
+
+<gallery>
+G1 G2
+</gallery>
+
+Psst... we call it EUI, which stands for Entity-based User Interface.
+
+<section>Building our infrastructure</section>
+
+After the ideas started to settle, we ran into a different problem: the add-on needed more than gameplay systems. It needed tools. A lot of the custom UI depended on generated text, button labels, artifact cards, symbols, colors, and small pixel-perfect details that would have been painful to create by hand every single time.
+
+That is where we started building our own infrastructure around the project. Instead of manually drawing every piece of text for the UI, we made tools that could turn prompts and formatting codes into usable pixel text. This let us experiment faster, keep the UI consistent, and generate the tiny pieces needed for buttons, artifact cards, and other custom interface elements.
+
+One example of this was PurpleFlag, a pixel text prompt renderer we used while shaping the custom UI pipeline.
+
+<gallery>
+PurpleFlag
+</gallery>`;
+  languageData["rune.void-restore"] = "When an item runs out of durability, it collapses into a Void Capsule. The capsule can be repaired to restore the item to its full form, preventing it from being lost.";
+});
+
+if (LANG_DATA.ar) {
+  LANG_DATA.ar["readtime.rtlText"] = "دقائق قراءة ";
+  LANG_DATA.ar["readtime.ltrText"] = "";
+}
+if (LANG_DATA.he) {
+  LANG_DATA.he["readtime.rtlText"] = "דקות קריאה ";
+  LANG_DATA.he["readtime.ltrText"] = "";
+}
+
+
+  const GETTING_STARTED = [
+    {
+      id: "gs.install",
+      readTimeMinutes: 1,
+      markupKey: "article.gs.install",
+    },
+    {
+      id: "gs.basics",
+      readTimeMinutes: 1,
+      markupKey: "article.gs.basics",
+    },
+    {
+      id: "gs.firsthour",
+      readTimeMinutes: 1,
+      markupKey: "article.gs.firsthour",
+    },
+    {
+      id: "gs.compatibility",
+      readTimeMinutes: 4,
+      markupKey: "article.gs.compatibility",
     },
     {
       id: "gs.devtools",
-      sections: [
-        {
-          heading: "Use the tools to inspect state",
-          paragraphs: [
-            "Developer-facing tools exist to help you see what the system thinks is happening. Overlays, dumps, and hooks are useful because they turn invisible state into something you can actually reason about.",
-            "That matters most when a build behaves differently than expected. Good inspection beats guessing."
-          ]
-        },
-        {
-          heading: "Tinker with purpose",
-          paragraphs: [
-            "Debug tools are strongest when you already have a question. Check what item was classified as, what pool was used, or what effect chain actually fired, then compare that against the result you saw in play.",
-            "Modders and heavy tinkerers move faster when they treat tooling as a reading instrument, not just a pile of switches."
-          ]
-        }
-      ]
+      readTimeMinutes: 1,
+      markupKey: "article.gs.devtools",
+    },
+    {
+      id: "gs.journey",
+      readTimeMinutes: 2,
+      markupKey: "article.gs.journey",
     },
   ];
 
@@ -2265,17 +2455,38 @@ Using this information, the item may still be identified correctly even if it la
   ];
 
   const RUNES_PAGE = [
-    { id: "runes.how" },
-    { id: "runes.rarity" },
-    { id: "runes.rolling" },
-    { id: "runes.stacking" },
+    { id: "runes.how", readTimeMinutes: 1 },
+    { id: "runes.rarity", readTimeMinutes: 1 },
+    { id: "runes.rolling", readTimeMinutes: 1 },
+    { id: "runes.stacking", readTimeMinutes: 1 },
   ];
 
   const MASTER_PAGE = [
-    { id: "master.synergies" },
-    { id: "master.timing" },
-    { id: "master.tools" },
-    { id: "master.secret" },
+    { id: "master.synergies", readTimeMinutes: 1 },
+    { id: "master.timing", readTimeMinutes: 1 },
+    { id: "master.tools", readTimeMinutes: 1 },
+    { id: "master.secret", readTimeMinutes: 1 },
+  ];
+
+  const RUNIC_ANVIL_PAGE = [
+    { id: "runic-anvil", titleKey: "runic-anvil.title", descKey: "runic-anvil.lede", readTimeMinutes: 1 },
+  ];
+
+  const RIFTS_PAGE = [
+    { id: "rifts", titleKey: "rifts.title", descKey: "rifts.lede", readTimeMinutes: 1 },
+  ];
+
+  const ITEMS_MATERIALS_PAGE = [
+    { id: "items-materials", titleKey: "items-materials.title", descKey: "items-materials.lede", readTimeMinutes: 1 },
+  ];
+
+  const ARTICLE_GALLERIES = [
+    { page: "getting-started", rootId: "gallery-getting-started", labelKey: "nav.getting-started", articles: GETTING_STARTED },
+    { page: "runes", rootId: "gallery-runes", labelKey: "nav.runes", articles: RUNES_PAGE },
+    { page: "master", rootId: "gallery-master", labelKey: "nav.master", articles: MASTER_PAGE },
+    { page: "runic-anvil", rootId: "gallery-runic-anvil", labelKey: "nav.runic-anvil", articles: RUNIC_ANVIL_PAGE },
+    { page: "rifts", rootId: "gallery-rifts", labelKey: "nav.rifts", articles: RIFTS_PAGE },
+    { page: "items-materials", rootId: "gallery-items-materials", labelKey: "nav.items-materials", articles: ITEMS_MATERIALS_PAGE },
   ];
 
   const LANGUAGES = [
@@ -2328,7 +2539,8 @@ Using this information, the item may still be identified correctly even if it la
 
   let I18N = {};
   let CURRENT_LANG = "en-US";
-  let currentGettingStartedArticleId = "gs.install";
+  let currentArticleId = "gs.install";
+  let currentArticleHomePage = "getting-started";
   let currentArticleSize = "default";
   let currentArticleContrast = "default";
   let currentArticleFont = "default";
@@ -2365,6 +2577,12 @@ Using this information, the item may still be identified correctly even if it la
     document.querySelectorAll("[data-i18n-placeholder]").forEach(el => {
       el.setAttribute("placeholder", t(el.dataset.i18nPlaceholder));
     });
+    document.querySelectorAll("[data-i18n-aria-label]").forEach(el => {
+      el.setAttribute("aria-label", t(el.dataset.i18nAriaLabel));
+    });
+    document.querySelectorAll("[data-i18n-title]").forEach(el => {
+      el.setAttribute("title", t(el.dataset.i18nTitle));
+    });
   }
 
   const pages = document.querySelectorAll(".page");
@@ -2375,7 +2593,7 @@ Using this information, the item may still be identified correctly even if it la
 
   function go(pageId) {
     if (pageId !== "search" && pageId !== "article") previousPage = pageId;
-    const activeNavPage = pageId === "article" ? "getting-started" : pageId;
+    const activeNavPage = pageId === "article" ? currentArticleHomePage : pageId;
     navItems.forEach(n => n.setAttribute("aria-selected", String(n.dataset.nav === activeNavPage)));
     pages.forEach(p => p.classList.toggle("is-active", p.dataset.page === pageId));
     const active = document.querySelector(`.page[data-page="${pageId}"]`);
@@ -2408,9 +2626,9 @@ Using this information, the item may still be identified correctly even if it la
     });
   }
 
-  function returnToGettingStarted() {
+  function returnToArticleGallery() {
     search.value = "";
-    go("getting-started");
+    go(currentArticleHomePage);
   }
 
   document.querySelectorAll("[data-nav]").forEach(el => {
@@ -2421,7 +2639,7 @@ Using this information, the item may still be identified correctly even if it la
     });
   });
   document.querySelectorAll("[data-article-back]").forEach(el => {
-    el.addEventListener("click", returnToGettingStarted);
+    el.addEventListener("click", returnToArticleGallery);
   });
   document.querySelectorAll("[data-article-size]").forEach(el => {
     el.addEventListener("click", () => {
@@ -2489,6 +2707,10 @@ Using this information, the item may still be identified correctly even if it la
   }
 
   function parseArticleMarkup(markup, fallbackTitle) {
+    markup = String(markup || "").replace(/<(title|section|code|list|gallery|galary)>([\s\S]*?)<\/\1>/gi, (_, tag, body) => {
+      const normalized = tag.toLowerCase() === "galary" ? "Gallery" : `${tag.charAt(0).toUpperCase()}${tag.slice(1).toLowerCase()}`;
+      return `<${normalized}?S>${body}<${normalized}?E>`;
+    });
     const tokens = [];
     const markerPattern = /<([A-Za-z]+)\?S>([\s\S]*?)<\1\?E>/g;
     let lastIndex = 0;
@@ -2509,6 +2731,24 @@ Using this information, the item may still be identified correctly even if it la
         return placeholder;
       }).replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>").replace(/\*([^*]+)\*/g, "<em>$1</em>").replace(/\n/g, "<br />");
       return placeholders.reduce((result, replacement, i) => result.replace(`@@ARTICLE_INLINE_${i}@@`, replacement), escapedValue);
+    };
+    const articleImageMap = {
+      G1: { src: "assets/journey/G1.jpg", alt: "Early Rifts and Runes UI sketch on graph paper" },
+      G2: { src: "assets/journey/G2.jpg", alt: "Early Ancestral Eye and void pool sketch on graph paper" },
+      PurpleFlag: { src: "assets/journey/PurpleFlag.png", alt: "PurpleFlag pixel text prompt renderer screenshot" },
+    };
+    const renderArticleGallery = value => {
+      const keys = value.split(/[\s,]+/).map(item => item.trim()).filter(Boolean);
+      const items = keys.map(key => {
+        const image = articleImageMap[key];
+        if (!image) return "";
+        return `
+          <figure class="article-gallery-item">
+            <img src="${escapeHtml(image.src)}" alt="${escapeHtml(image.alt)}" loading="lazy" />
+            <figcaption class="article-gallery-caption">${escapeHtml(key)}</figcaption>
+          </figure>`;
+      }).join("");
+      return items ? `<div class="article-gallery-block">${items}</div>` : "";
     };
 
     let title = fallbackTitle;
@@ -2538,6 +2778,7 @@ Using this information, the item may still be identified correctly even if it la
             ${section.blocks.map(block => {
               if (block.type === "code") return `<pre class="article-code"><code>${escapeHtml(block.value)}</code></pre>`;
               if (block.type === "list") return `<ul class="article-list">${block.value.split("\n").map(line => line.trim()).filter(Boolean).map(line => `<li>${formatArticleInline(line.replace(/^-+\s*/, ""))}</li>`).join("")}</ul>`;
+              if (block.type === "gallery") return renderArticleGallery(block.value);
               return block.value.split(/\n\s*\n/).map(paragraph => paragraph.trim()).filter(Boolean).map(paragraph => `<p>${formatArticleInline(paragraph)}</p>`).join("");
             }).join("")}
           </section>`).join("")
@@ -2556,7 +2797,7 @@ Using this information, the item may still be identified correctly even if it la
         <span class="card-origin-label">${escapeHtml(label)}</span>
       </div>`;
     }).join("");
-    return `<div class="card-origin-tree" aria-label="Content path">${rows}</div>`;
+    return `<div class="card-origin-tree" aria-label="${escapeHtml(t("article.origin.aria"))}">${rows}</div>`;
   }
 
   function card(item, tag) {
@@ -2573,7 +2814,9 @@ Using this information, the item may still be identified correctly even if it la
     let detailHtml = "";
     if (detail) detailHtml = `<div class="card-more">${detail}</div>`;
     el.innerHTML = `
-      ${item.icon ? `<div class="card-icon-stage"><img class="card-icon" src="${item.icon}" alt="" draggable="false" /></div>` : ""}
+      ${item.icon ? `<div class="card-icon-stage">
+        <img class="card-icon" src="${item.icon}" alt="" draggable="false" />
+      </div>` : ""}
       <div class="card-inner">
         ${item.icon ? "" : `<div class="card-dot"></div>`}
         <div class="card-title">${item.title}</div>
@@ -2581,7 +2824,7 @@ Using this information, the item may still be identified correctly even if it la
         ${originHtml}
         ${detailHtml ? `<div class="card-details"><div class="card-details-inner">${detailHtml}</div></div>` : ""}
       </div>
-      ${detailHtml ? `<button class="card-show-less" type="button">Show Less</button>` : ""}`;
+      ${detailHtml ? `<button class="card-show-less" type="button">${escapeHtml(t("article.show-less"))}</button>` : ""}`;
     if (detailHtml) {
       el.classList.add("is-expandable");
       el.setAttribute("aria-expanded", "false");
@@ -2597,10 +2840,7 @@ Using this information, the item may still be identified correctly even if it la
     if (item.articleId) {
       el.classList.add("is-expandable");
       el.addEventListener("click", () => {
-        currentGettingStartedArticleId = item.articleId;
-        render();
-        search.value = "";
-        go("article");
+        openArticle(item.articleId, item.articleHomePage || "getting-started");
       });
     } else if (item.targetArtifact) {
       el.classList.add("is-expandable");
@@ -2626,22 +2866,68 @@ Using this information, the item may still be identified correctly even if it la
     }
     return el;
   }
-  function step(item, i) {
+
+  function openArticle(articleId, homePage) {
+    currentArticleId = articleId;
+    currentArticleHomePage = homePage;
+    render();
+    search.value = "";
+    go("article");
+  }
+
+  function articleTitleText(article) {
+    return t(article.titleKey || `${article.id}.title`);
+  }
+
+  function articleDescText(article) {
+    return t(article.descKey || `${article.id}.desc`);
+  }
+
+  function articleReadTimeText(article) {
+    return `${t("readtime.rtlText")}${article.readTimeMinutes || 1}${t("readtime.ltrText")}`;
+  }
+
+  function rarityLabel(rarity) {
+    return t(`rarity.${rarity.toLowerCase()}`);
+  }
+
+  function artifactDetailText(slotKey, rarity) {
+    return t("artifacts.detail")
+      .replace("{slot}", t(slotKey))
+      .replace("{rarity}", rarityLabel(rarity));
+  }
+
+  function articleTile(item, homePage, groupLabel) {
     const el = document.createElement("div");
-    el.className = "step";
+    el.className = "article-tile";
+    el.setAttribute("role", "button");
+    el.setAttribute("tabindex", "0");
     el.innerHTML = `
-      <div class="step-num">${i + 1}</div>
-      <div class="step-body">
-        <h3>${item.title}</h3>
-        <p>${item.desc}</p>
-      </div>`;
-    if (item.articleId) el.addEventListener("click", () => {
-      currentGettingStartedArticleId = item.articleId;
-      render();
-      search.value = "";
-      go("article");
+      <div class="article-tile-kicker">${escapeHtml(groupLabel)}</div>
+      <div class="article-tile-title">${item.title}</div>
+      <div class="article-tile-desc">${item.desc}</div>`;
+    const activate = () => openArticle(item.articleId, homePage);
+    el.addEventListener("click", activate);
+    el.addEventListener("keydown", event => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        activate();
+      }
     });
     return el;
+  }
+
+  function renderArticleGallery(rootId, articles, homePage, groupLabel) {
+    const root = document.getElementById(rootId);
+    if (!root) return;
+    root.innerHTML = "";
+    articles.forEach(article => {
+      root.appendChild(articleTile({
+        title: articleTitleText(article),
+        desc: articleDescText(article),
+        articleId: article.id,
+      }, homePage, groupLabel));
+    });
   }
 
   const SLOT_I18N = {
@@ -2659,15 +2945,15 @@ Using this information, the item may still be identified correctly even if it la
       { key: "weapons", label: "artifacts.filter.weapons" },
       { key: "armor",   label: "artifacts.filter.armor" },
       { key: "tools",   label: "artifacts.filter.tools" },
-      { key: "common",  label: "Common Only", rarity: "Common" },
-      { key: "rare",    label: "Rare Only",   rarity: "Rare" },
-      { key: "mythic",  label: "Mythic Only", rarity: "Mythic" },
+      { key: "common",  label: "artifacts.filter.common", rarity: "Common" },
+      { key: "rare",    label: "artifacts.filter.rare",   rarity: "Rare" },
+      { key: "mythic",  label: "artifacts.filter.mythic", rarity: "Mythic" },
     ];
     opts.forEach(o => {
       const b = document.createElement("button");
       b.className = "filter-pill";
       if (o.rarity) b.classList.add(`filter-rarity-${o.rarity.toLowerCase()}`);
-      b.textContent = o.rarity ? o.label : t(o.label);
+      b.textContent = t(o.label);
       b.setAttribute("aria-pressed", String(o.rarity ? currentRarityFilter === o.rarity : currentSlotFilter === o.key));
       b.addEventListener("click", () => {
         if (o.rarity) currentRarityFilter = currentRarityFilter === o.rarity ? "all" : o.rarity;
@@ -2700,12 +2986,13 @@ Using this information, the item may still be identified correctly even if it la
         Object.entries(group.rarities).filter(([rarity]) => currentRarityFilter === "all" || rarity === currentRarityFilter).forEach(([rarity, items]) => {
           const wrap = document.createElement("div");
           wrap.style.marginBottom = "28px";
-          wrap.innerHTML = `<div class="rarity ${rarity.toLowerCase()}"><span class="rarity-dot"></span>${rarity}</div>`;
+          wrap.innerHTML = `<div class="rarity ${rarity.toLowerCase()}"><span class="rarity-dot"></span>${rarityLabel(rarity)}</div>`;
           const grid = document.createElement("div");
           grid.className = "grid";
           items.forEach(it => {
+            const artifactSlug = slugify(it.name);
             const descKey = `rune.${slugify(it.name)}`;
-            grid.appendChild(card({ title: it.name, desc: t(descKey), icon: `icons/${slugify(it.name).replace(/-/g, "_")}.png`, rarity, artifactSlug: slugify(it.name), detail: `${t(SLOT_I18N[group.slot].sub)} ${rarity} rarity.` }));
+            grid.appendChild(card({ title: it.name, desc: t(descKey), icon: `icons/${artifactSlug.replace(/-/g, "_")}.png`, rarity, artifactSlug, detail: artifactDetailText(SLOT_I18N[group.slot].sub, rarity) }));
           });
           wrap.appendChild(grid);
           g.appendChild(wrap);
@@ -2719,89 +3006,99 @@ Using this information, the item may still be identified correctly even if it la
     return s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
   }
 
-  function render() {
-    const stepsEl = document.getElementById("steps");
-    stepsEl.innerHTML = "";
-    GETTING_STARTED.forEach((x, i) => stepsEl.appendChild(step({ title: t(x.id + ".title"), desc: t(x.id + ".desc"), articleId: x.id }, i)));
+  function findArticle(articleId) {
+    for (const gallery of ARTICLE_GALLERIES) {
+      const article = gallery.articles.find(item => item.id === articleId);
+      if (article) return { ...article, homePage: gallery.page, labelKey: gallery.labelKey };
+    }
+    return { ...GETTING_STARTED[0], homePage: "getting-started", labelKey: "nav.getting-started" };
+  }
 
-    const currentGettingStartedArticle = GETTING_STARTED.find(x => x.id === currentGettingStartedArticleId) || GETTING_STARTED[0];
+  function render() {
+    ARTICLE_GALLERIES.forEach(gallery => {
+      renderArticleGallery(gallery.rootId, gallery.articles, gallery.page, t(gallery.labelKey));
+    });
+
+    const currentArticle = findArticle(currentArticleId);
+    currentArticleHomePage = currentArticle.homePage;
+    const currentArticleLabel = t(currentArticle.labelKey);
     const articleShell = document.getElementById("article-shell");
     const articleTitle = document.getElementById("article-title");
     const articleLede = document.getElementById("article-lede");
     const articleBody = document.getElementById("article-body");
+    const articleBackLabel = document.getElementById("article-back-label");
+    const articleBreadcrumbLabel = document.getElementById("article-breadcrumb-label");
+    const articleReadTime = document.getElementById("article-read-time");
+    articleBackLabel.textContent = currentArticleLabel;
+    articleBreadcrumbLabel.textContent = currentArticleLabel;
+    articleReadTime.textContent = articleReadTimeText(currentArticle);
     articleShell.dataset.articleSize = currentArticleSize;
     articleShell.dataset.articleContrast = currentArticleContrast;
     articleShell.dataset.articleFont = currentArticleFont;
     document.querySelectorAll("[data-article-size]").forEach(control => control.setAttribute("aria-pressed", String(control.dataset.articleSize === currentArticleSize)));
     document.querySelectorAll("[data-article-contrast]").forEach(control => control.setAttribute("aria-pressed", String(control.dataset.articleContrast === currentArticleContrast)));
     document.querySelectorAll("[data-article-font]").forEach(control => control.setAttribute("aria-pressed", String(control.dataset.articleFont === currentArticleFont)));
-    if (currentGettingStartedArticle.markup) {
-      const parsedArticle = parseArticleMarkup(currentGettingStartedArticle.markup, t(currentGettingStartedArticle.id + ".title"));
+    if (currentArticle.markupKey) {
+      const parsedArticle = parseArticleMarkup(t(currentArticle.markupKey), articleTitleText(currentArticle));
       articleTitle.textContent = parsedArticle.title;
       articleLede.textContent = "";
       articleLede.hidden = true;
       articleBody.innerHTML = parsedArticle.bodyHtml;
-    } else {
-      articleTitle.innerHTML = t(currentGettingStartedArticle.id + ".title");
-      articleLede.textContent = t(currentGettingStartedArticle.id + ".desc");
+    } else if (currentArticle.sections) {
+      articleTitle.innerHTML = articleTitleText(currentArticle);
+      articleLede.textContent = articleDescText(currentArticle);
       articleLede.hidden = false;
-      articleBody.innerHTML = currentGettingStartedArticle.sections.map(section => `
+      articleBody.innerHTML = currentArticle.sections.map(section => `
         <section class="article-section">
           <h2>${escapeHtml(section.heading)}</h2>
           ${section.paragraphs.map(paragraph => `<p>${escapeHtml(paragraph)}</p>`).join("")}
         </section>`).join("");
+    } else {
+      articleTitle.innerHTML = articleTitleText(currentArticle);
+      articleLede.textContent = articleDescText(currentArticle);
+      articleLede.hidden = false;
+      articleBody.innerHTML = `
+        <section class="article-section is-intro">
+          <p>${escapeHtml(articleDescText(currentArticle))}</p>
+        </section>`;
     }
 
     renderFilters();
     renderArtifacts();
-
-    const runesEl = document.getElementById("grid-runes");
-    runesEl.innerHTML = "";
-    RUNES_PAGE.forEach(x => runesEl.appendChild(card({ title: t(x.id + ".title"), desc: t(x.id + ".desc") })));
-
-    const masterEl = document.getElementById("grid-master");
-    masterEl.innerHTML = "";
-    MASTER_PAGE.forEach(x => masterEl.appendChild(card({ title: t(x.id + ".title"), desc: t(x.id + ".desc") })));
     scheduleEqualizeCardRows();
   }
 
   function buildIndex() {
     const idx = [];
-    GETTING_STARTED.forEach(x => idx.push({
-      title: t(x.id + ".title"), desc: t(x.id + ".desc"),
-      source: t("nav.getting-started"),
-      originPath: ["Wiki", t("nav.getting-started"), t(x.id + ".title").replace(/<br\s*\/?>/gi, " ")],
-      articleId: x.id
-    }));
+    ARTICLE_GALLERIES.forEach(gallery => {
+      gallery.articles.forEach(x => idx.push({
+        title: articleTitleText(x),
+        desc: articleDescText(x),
+        source: t(gallery.labelKey),
+        originPath: ["Wiki", t(gallery.labelKey), articleTitleText(x).replace(/<br\s*\/?>/gi, " ")],
+        articleId: x.id,
+        articleHomePage: gallery.page,
+        readTime: articleReadTimeText(x),
+      }));
+    });
     ARTIFACTS_RAW.forEach(g => {
       Object.entries(g.rarities).forEach(([rarity, items]) => {
         items.forEach(it => {
-          const source = `${t(SLOT_I18N[g.slot].cat)} ${rarity}`;
+          const artifactSlug = slugify(it.name);
+          const source = `${t(SLOT_I18N[g.slot].cat)} ${rarityLabel(rarity)}`;
           idx.push({
             title: it.name,
-            desc: t(`rune.${slugify(it.name)}`),
+            desc: t(`rune.${artifactSlug}`),
             source,
             page: "artifacts",
-            icon: `icons/${slugify(it.name).replace(/-/g, "_")}.png`,
+            icon: `icons/${artifactSlug.replace(/-/g, "_")}.png`,
             rarity,
-            originPath: ["Wiki", t("nav.artifacts"), t(SLOT_I18N[g.slot].cat), rarity],
-            targetArtifact: slugify(it.name)
+            originPath: ["Wiki", t("nav.artifacts"), t(SLOT_I18N[g.slot].cat), rarityLabel(rarity)],
+            targetArtifact: artifactSlug
           });
         });
       });
     });
-    RUNES_PAGE.forEach(x => idx.push({
-      title: t(x.id + ".title"), desc: t(x.id + ".desc"),
-      source: t("nav.runes"),
-      originPath: ["Wiki", t("nav.runes"), t(x.id + ".title")],
-      page: "runes"
-    }));
-    MASTER_PAGE.forEach(x => idx.push({
-      title: t(x.id + ".title"), desc: t(x.id + ".desc"),
-      source: t("nav.master"),
-      originPath: ["Wiki", t("nav.master"), t(x.id + ".title")],
-      page: "master"
-    }));
     return idx;
   }
 
